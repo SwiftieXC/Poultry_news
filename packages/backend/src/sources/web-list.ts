@@ -4,7 +4,7 @@ import { guardedFetch } from "../lib/http-fetch.ts";
 import { fetchListing } from "./listing-fetch.ts";
 import { identityKeyForUrl, normalizeUrl } from "../lib/url.ts";
 import { collapseWhitespace, stripTags } from "../lib/text.ts";
-import { readable, type ExtractedBody } from "../content/extract.ts";
+import { isSignInUrl, readable, type ExtractedBody } from "../content/extract.ts";
 import { sanitizeBody } from "../content/sanitize.ts";
 import { jinaRead } from "../providers/jina.ts";
 import { articleUtcOffset, parseLooseDate } from "./dates.ts";
@@ -77,7 +77,7 @@ function listingItself(url: string, listing: string): boolean {
  * author and pagination pages.
  */
 function navigationLink(url: string, listing: string): boolean {
-  if (listingItself(url, listing)) return true;
+  if (listingItself(url, listing) || isSignInUrl(url)) return true;
   const u = new URL(url);
   return /\/(label|labels|tag|tags|category|categories|author|authors|page)(\/|$)/i.test(u.pathname) || /\/(19|20)\d{2}(\/\d{1,2})?\/?$/.test(u.pathname);
 }
@@ -165,6 +165,7 @@ export function fromHtml(html: string, base: string, source: SourceRow): Candida
     const linkEl = c.linkSelector ? (el.is(c.linkSelector) ? el : el.find(c.linkSelector).first()) : el.is("a") ? el : el.find("a[href]").first();
     const url = absolute(linkEl.attr("href"), base);
     if (!url || seen.has(url) || !allowed(url, source)) continue;
+    if (isSignInUrl(url)) continue;
     if (!sectionsArePosts && listingItself(url, listing)) continue;
     const titleEl = c.titleSelector ? (el.is(c.titleSelector) ? el : el.find(c.titleSelector).first()) : linkEl;
     const title = collapseWhitespace(titleEl.text() || linkEl.attr("title") || "");

@@ -10,6 +10,7 @@
     "./modules/server": "./modules/server.ts",
     "./modules/web": "./modules/web.ts",
     "./pages/*": "./pages/*",
-    "./brand/*": "./brand/*"
+    "./brand/*": "./brand/*",
+    "./format": "./format.ts"
   }
 }

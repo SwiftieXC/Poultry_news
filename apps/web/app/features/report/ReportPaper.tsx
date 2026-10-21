@@ -1,3 +1,4 @@
+import { formatChineseCopy } from "@aihot/site/format";
 // One report with a newspaper's structure in the site's own look: a nameplate with its 报眼 (the box
 // beside it for the issue and date), a band of the issue's figures, the front page (the lead, today's
 // highlights and the page index), then one page per section in two columns, the neighbouring issues
@@ -99,7 +100,7 @@ function Source({ c, size = 16 }: { c: ReportCitation; size?: number }) {
  */
 function Original({ c, className = "" }: { c: ReportCitation; className?: string }) {
   return (
-    <a href={c.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`阅读${c.sourceName}原文：${c.title}（新标签页）`} className={`${LINK} text-[12.5px] text-ink-3 ${className}`}>
+    <a href={c.sourceUrl} target="_blank" rel="noopener noreferrer" aria-label={`阅读${c.sourceName}原文：${formatChineseCopy(c.title)}（新标签页）`} className={`${LINK} text-[12.5px] text-ink-3 ${className}`}>
       原文 <IconArrowUpRight size={12} />
     </a>
   );
@@ -155,13 +156,13 @@ function Story({ c, dated, className = "" }: { c: ReportCitation; dated: boolean
           <h3 className="mt-3 text-[19px] font-bold leading-[1.5] tracking-[-0.01em] text-ink [overflow-wrap:anywhere] [text-wrap:pretty] @[880px]:text-[20px]">
             {c.itemId ? (
               <IntentLink viewTransition to={`/items/${c.itemId}`} className="transition-colors hover:text-accent">
-                {c.title}
+                {formatChineseCopy(c.title)}
               </IntentLink>
             ) : (
               c.title
             )}
           </h3>
-          {c.summary && <p className="mt-2 line-clamp-4 text-[15px] leading-[1.85] text-ink-2 [overflow-wrap:anywhere] @[560px]:text-justify">{c.summary}</p>}
+          {c.summary && <p className="mt-2 text-[15px] leading-[1.85] text-ink-2 [overflow-wrap:anywhere] @[560px]:text-justify">{formatChineseCopy(c.summary)}</p>}
           {!!c.related?.length && <Related items={c.related} className="mt-3" />}
           <div className="mt-auto pt-3">
             <Original c={c} />
@@ -169,7 +170,7 @@ function Story({ c, dated, className = "" }: { c: ReportCitation; dated: boolean
         </>
       ) : (
         <p className="mt-3 text-[14px] leading-relaxed text-ink-4">
-          <span className="line-through">{c.title}</span> · {WITHDRAWN_NOTE}
+          <span className="line-through">{formatChineseCopy(c.title)}</span> · {WITHDRAWN_NOTE}
         </p>
       )}
     </article>
@@ -301,7 +302,7 @@ function FrontPage({ report, pages, leadStory, count }: { report: ReportDetail; 
         </h2>
         {dek && (
           <div className={cover && !wide ? "order-3 mt-6 grid gap-6 @[640px]:grid-cols-[minmax(0,1fr)_minmax(0,38%)] @[880px]:mt-7" : "order-3"}>
-            <p className={`text-[16.5px] leading-[1.9] text-ink-2 @[880px]:text-[17.5px] ${cover && !wide ? "" : "mt-6 @[560px]:text-justify @[880px]:mt-7"}`}>{dek}</p>
+            <p className={`text-[16.5px] leading-[1.9] text-ink-2 @[880px]:text-[17.5px] ${cover && !wide ? "" : "mt-6 @[560px]:text-justify @[880px]:mt-7"}`}>{formatChineseCopy(dek ?? "")}</p>
             {cover && !wide && <LeadPicture cover={cover} onError={() => setBroken(cover.url)} />}
           </div>
         )}

@@ -1,45 +1,10 @@
-
-【AI 领域翻译规则 — 本平台 100% 是 AI/ML/LLM 行业内容，严格遵守】
-
-1. 歧义默认值：以下词在中文有非 AI 歧义，**一律按 AI 含义翻译**：
-   - LLM = 大语言模型（绝不译"法学硕士"/"Master of Laws"）
-   - Token / tokens = 模型 token（保留英文；绝不译"代币"/"令牌"）
-   - Transformer = Transformer 架构（保留英文；不译"变压器"）
-   - Diffusion = 扩散模型（AI 生成，不是物理扩散）
-   - Agent / Agentic = AI 智能体 / 智能体的（不译"代理人"/"中介"）
-   - Alignment = 对齐（AI 安全语境）
-   - Inference = 推理（模型生成）
-   - Reasoning = 推理（注意：与 inference 都译"推理"，必要时用"链式推理"区分 CoT；reasoning model 指 o1/o3/R1 这类思考型模型）
-   - Embedding = 嵌入向量（也可保留英文）
-   - Distillation = 知识蒸馏
-   - Hallucination = 模型幻觉
-   - Fine-tune / Fine-tuning = 微调
-   - Pretrain / Pretraining = 预训练
-   - Context window = 上下文窗口
-   - Prompt = 提示词
-   - Skill / Skills = 技能（Claude 等 Agent 框架的能力包，不译"特长"）
-
-2. 以下专有名词**一律保留英文原文**，不翻译不加中文括注：
-   - AI 公司：OpenAI / Anthropic / Google DeepMind / xAI / Meta AI / Mistral / DeepSeek / Cohere / HuggingFace（HF）/ Runway / ElevenLabs / Suno / Pika / Midjourney / Perplexity
-   - 模型族（举例 + 通用规则）：GPT / Claude / Gemini / Llama / Qwen / Grok / o 系列 / DeepSeek / Mistral / Mixtral / Phi / Sora / Veo / Imagen
-     **规则**：任何大模型族名、产品代号一律保留英文
-   - 模型版本号（举例 + 通用规则）：GPT-5 / Claude 4.7 / Claude Sonnet 4.6 / Llama 4 / Gemini 3 / o3 / o4 / DeepSeek-V4 / Qwen3.7
-     **规则**：版本号一字不改（包括字母数字后缀如 4o / 4.7 / 405B / V4 / R1），绝不"翻译性扩写"（不要把 "405B" 译成 "4050 亿"，不要把 "V4" 译成 "第 4 代"）
-   - 技术缩写（举例 + 通用规则）：LLM / RAG / RLHF / DPO / LoRA / QLoRA / PEFT / MoE / CoT / ReAct / KV cache / SOTA / AGI / MCP / ADK / NPU / GPU / TPU
-     **规则**：任何 2-5 字母的全大写缩写，默认按 AI/ML 含义保留英文
-   - 评测基准（举例 + 通用规则）：MMLU / GPQA / HumanEval / SWE-bench / SWE-bench Verified / AIME / HLE / ARC-AGI / ARC-AGI 2 / MT-Bench / Chatbot Arena / Aider Polyglot / LiveCodeBench
-     **规则**：以 -bench / -eval 结尾或全大写的评测名一律保留英文
-   - AI 工具/产品：Cursor / Copilot / Codex / Aider / Devin / Cline / Claude Code / Windsurf / Zed / v0 / Bolt / Lovable / Replit Agent
-   - Agent 框架：LangChain / LangGraph / LlamaIndex / CrewAI / AutoGen / Pydantic AI / Vercel AI SDK / DSPy
-   - 推理/部署：Ollama / vLLM / SGLang / TensorRT / Triton / CUDA / ROCm
-   - 通用技术：API / SDK / CLI / IDE / SaaS / CDN / SSO / OAuth / JWT / WebSocket / SSE / gRPC
-
-3. 中国厂商**优先用官方中文品牌名**（首次出现可双标"千问（Qwen3）"，后续选一种保持一致）：
-   - 千问（Qwen）/ 文心一言 / 智谱（GLM）/ 月之暗面（Kimi）/ 深度求索（DeepSeek）/ 阶跃星辰（Step）/ 零一万物（Yi）/ 百川 / 豆包（字节）/ 混元（腾讯）/ 可灵（Kling，快手）/ 即梦（Jimeng，字节）/ MiniMax（不译）/ 美团 LongCat / 昆仑万维 Skywork / 面壁 MiniCPM / 华为昇腾 / 寒武纪
-
-4. 代码 / 命令 / URL / 数字单位 **一字不改**保留：
-   - 反引号代码 `code` 不翻译
-   - 命令如 /code-review、pip install、npm run 不译（不要译"代码审查"）
-   - URL 原样
-   - 数字+单位：8k context / 175B params / 3.5x speedup / $3 per M tokens / 99.9%
-   - 金额、参数量、比例、区间必须保留原文的阿拉伯数字和单位；不要把 $10B-$100B 改写成“数百亿至数千亿美元”等中文数量词
+禽肉贸易术语与写作规范：
+- chicken／poultry／duck 分别译鸡肉／禽肉／鸭肉；raw broiler products／raw poultry products 译为未熟制禽肉制品，不自动等于生鲜／冷藏／冷冻；in natura 是未熟制，不能一律译为冷冻；chilled／frozen 为冷藏／冷冻，cooked 为熟制，processed 为加工或深加工，必须按原文程度表述。
+- establishment approval 为工厂准入／注册，approval、suspension、lifting、temporary ban、notification、draft、effective 分别保留批准、暂停、恢复、临时禁令、通知、草案、生效阶段。
+- Halal、HACCP、HS、SPS、TBT、CIF、FOB、WOAH、WAHIS、WTO、SFDA、MAFF、MHLW、AQS、ABPA、MAPA 及企业官方名称保留；MENA 为中东和北非，不能把埃及当海湾国家。
+- tons、tonnes、kg、USD／BRL／JPY、千吨、同比、环比分别保留口径；不擅自换币种、单位、HS 版本或净重／毛重。HS 0207 的禽肉范围不自动覆盖熟制产品，1602 也不能一律当鸡肉，按源的明示子目。
+- disease outbreak 为疫情报告，不等于 import ban；SPS 通知不等于生效法规；exhibitor 为展商，不等于买家；tender 为招标，不等于采购成交。
+- Newcastle disease／Doença de Newcastle 为新城疫，与avian influenza／HPAI禽流感区分；标签和正文保留同一病种，不用词表里相近疾病替代。
+- 日本令和年号按绝对年换算：令和3年为2021年，令和8年为2026年。明确年月不改为上月／去年；保留措施开始、解除及适用产品日期的区别。活动时态以原文发布时的安排和明确日期为准；明确结束日前不写已结束，未提供当前时间时保留原文计划表述。
+- 金额以同一币种的中文数值与单位表达，按等值数量换单位，不换汇率。SAR 192 million为1.92亿沙特里亚尔，THB 25 billion为250亿泰铢；先确认million／billion及原文分隔符，不直接保留英文数量级词。
+- 中文全角标点，中文与英文／数字之间加半角空格；破折号用 --。数字小数、日期、英文原名、URL、文件名、代码和原文引文内部字符保持不变，不把推断写进 fact evidence。

@@ -33,6 +33,9 @@ export function parseLooseDate(value: string | null | undefined, utcOffset = "+0
   if (!value) return null;
   const v = value.trim();
   if (!v) return null;
+  // Some publication elements render adjacent year/month/day spans as YYYYMMDD text.
+  const compact = /^(\d{4})(\d{2})(\d{2})$/.exec(v);
+  if (compact) return atOffset(compact[1]!, compact[2]!, compact[3]!, 0, 0, 0, utcOffset);
   const numeric = /(\d{4})[-/.年](\d{1,2})[-/.月](\d{1,2})日?(?:(?:T|\s*)(\d{1,2}):(\d{2})(?::(\d{2}))?)?/.exec(v);
   if (numeric && !calendarDay(numeric[1]!, numeric[2]!, numeric[3]!)) return null;
   const english = /\b([a-z]{3,9})\s+(\d{1,2})(?:st|nd|rd|th)?[,]?\s+(\d{4})\b/i.exec(v)

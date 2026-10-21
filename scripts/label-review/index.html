@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>禽贸情报 · 选材标注</title>
+  <link rel="stylesheet" href="/styles.css"><script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="禽贸情报标注首页"><span class="brand-dot"></span>禽贸情报<span class="brand-sub">选材标注</span></a>
+    <div class="progress-wrap"><span id="progress-text">正在读取资料…</span><progress id="progress" value="0" max="30"></progress></div>
+    <a class="export" href="/api/export" download>导出结果 <span aria-hidden="true">↗</span></a>
+  </header>
+  <main class="workspace">
+    <aside class="sidebar" aria-label="资料导航">
+      <div class="sidebar-heading"><h1>首批资料</h1><span id="total-count" class="count">—</span></div>
+      <p class="sidebar-intro">这些是历史资料。请按发布当时的业务价值判断，不因日期较旧而排除。</p>
+      <label class="search-label" for="search">查找资料</label><input id="search" type="search" placeholder="标题、来源或关键词">
+      <div class="filter-row" role="group" aria-label="筛选资料"><button class="filter active" id="filter-all" type="button" aria-pressed="true">全部</button><button class="filter" id="filter-pending" type="button" aria-pressed="false">未标注</button><button class="filter" id="filter-uncertain" type="button" aria-pressed="false">待确认</button></div>
+      <nav id="case-list" class="case-list" aria-label="资料列表"></nav>
+      <div class="sidebar-footer"><strong>不用截图，也不用复制回复。</strong><p>选择会自动保存。标完后告诉我“标好了”，我就能读取结果。</p><a href="/api/gold" download>导出已标注评测样本 ↗</a></div>
+    </aside>
+    <section class="review-area" aria-label="当前资料">
+      <div id="error" class="notice error" role="alert" hidden></div>
+      <div id="restore-notice" class="notice" hidden>已恢复上次未保存的草稿，请核对后保存。</div>
+      <div id="empty" class="empty" hidden><span class="empty-icon">✓</span><h2>当前列表已看完</h2><p>可以切换到“全部”复核，或直接告诉我“标好了”。</p></div>
+      <article id="review" hidden>
+        <div class="article-top"><span id="position" class="eyebrow"></span><span class="review-note">资料要点经人工整理 · 不显示模型评分</span></div>
+        <p class="mobile-instruction">历史资料，请按发布时的业务价值判断。</p>
+        <div id="metadata" class="metadata"></div>
+        <h2 id="title"></h2>
+        <p id="original-title" class="original-title"></p>
+        <div class="source-row"><a id="source-link" target="_blank" rel="noopener noreferrer">查看原文 ↗</a></div>
+        <section class="summary-box"><h3>资料要点</h3><p id="summary"></p></section>
+        <details class="original"><summary>展开原文正文 <span>便于核对数字、产品和政策范围</span></summary><pre id="body-original"></pre></details>
+        <section class="decision-section" aria-labelledby="decision-heading"><div class="decision-heading"><h3 id="decision-heading">这条资料值得入选吗？</h3><span>按您的业务判断选择</span></div>
+          <div class="decisions" role="group" aria-label="标注判断">
+            <button type="button" class="decision" data-decision="select" aria-pressed="false"><span class="decision-symbol">✓</span><strong>值得入选</strong><small>有重要变化或跟进价值</small></button>
+            <button type="button" class="decision" data-decision="related" aria-pressed="false"><span class="decision-symbol">·</span><strong>相关但不重要</strong><small>可以留档，暂不进日报</small></button>
+            <button type="button" class="decision" data-decision="irrelevant" aria-pressed="false"><span class="decision-symbol">×</span><strong>无关</strong><small>不属于禽肉贸易情报</small></button>
+            <button type="button" class="decision" data-decision="uncertain" aria-pressed="false"><span class="decision-symbol">?</span><strong>暂不确定</strong><small>资料不足或需要再核实</small></button>
+          </div>
+        </section>
+        <section class="feedback"><label class="notes-label" for="notes">备注 <span>选填</span></label><textarea id="notes" rows="3" maxlength="2000" placeholder="例如：值得跟进，但还要核对产品范围；或者这条对我们的业务不重要。"></textarea>
+          <fieldset class="flags"><legend>要特别核对的地方 <span>选填，可多选</span></legend><label><input type="checkbox" value="numbers">数字／单位</label><label><input type="checkbox" value="products">产品范围</label><label><input type="checkbox" value="stage">政策阶段</label><label><input type="checkbox" value="buyer">采购意图</label><label><input type="checkbox" value="summary">摘要表达</label></fieldset>
+        </section>
+        <footer class="review-footer"><div class="save-status" id="save-status" role="status" aria-live="polite">请选择一个判断</div><div class="navigation"><button type="button" class="secondary" id="previous">← 上一条</button><button type="button" class="secondary" id="save-now" hidden>保存备注</button><button type="button" class="primary" id="next">下一条 →</button></div></footer>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

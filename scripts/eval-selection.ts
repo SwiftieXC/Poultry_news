@@ -90,6 +90,8 @@ function toInput(r: GoldRow): AnalyzeInputArticle {
 
 const models = await evalModels(values.models, "score");
 
+// This script evaluates only selection; live analyses also require reader-facing copy before publication.
+const COPY_WRITTEN: AnalysisRun["writing"] = { kind: "none", model: null, titleZh: "-", summaryZh: "-", reasonZh: null, receiptIds: [], reused: true };
 const report: Record<string, unknown> = {};
 for (const model of models) {
   const started = Date.now();
@@ -128,7 +130,7 @@ for (const model of models) {
 
       // Model output is independent of source tier; the decision threshold is not.
       const scores = shared.scores ? { ...shared.scores, threshold } : null;
-      const run: AnalysisRun = { prefilter, scores, writing: null, structure: null };
+      const run: AnalysisRun = { prefilter, scores, writing: COPY_WRITTEN, structure: null };
       return { r, out: normalizeAnalysis(run), receiptIds, error: null as string | null };
     } catch (error) {
       return { r, out: null, receiptIds, error: String(error).slice(0, 200) };

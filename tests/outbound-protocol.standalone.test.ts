@@ -19,7 +19,7 @@ await exec("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout
   "subjectAltName=DNS:outbound.invalid,DNS:cloudflare-dns.com,IP:127.0.0.1,IP:93.184.216.34"]);
 after(() => rm(directory, { recursive: true, force: true }));
 
-for (const route of ["direct", "proxy", "secure-proxy", "dns"] as const) {
+for (const route of ["direct", "proxy", "secure-proxy", "dns", "dns-a-only", "dns-aaaa-only", "dns-failed", "dns-empty", "dns-private", "dns-invalid"] as const) {
   test(`outbound ${route} negotiates HTTP/1.1 and retains TLS identity`, async () => {
     const { stdout } = await exec(process.execPath, ["--input-type=module", "-e", `
       import { readFileSync } from 'node:fs';
@@ -38,7 +38,10 @@ for (const route of ["direct", "proxy", "secure-proxy", "dns"] as const) {
         requests.push({ version: req.httpVersion, host: req.headers.host ?? req.headers[':authority'], sni: req.socket.servername });
         if (req.url.startsWith('/dns-query')) {
           res.setHeader('content-type', 'application/json');
-          res.end(JSON.stringify({ Status: 0, Answer: [{ type: 1, data: '93.184.216.34', TTL: 60 }] }));
+          const ipv6 = new URL(req.url, 'https://cloudflare-dns.com').searchParams.get('type') === 'AAAA';
+          const failed = route === 'dns-failed' || route === 'dns-a-only' && ipv6 || route === 'dns-aaaa-only' && !ipv6;
+          const data = route === 'dns-private' && ipv6 ? '::1' : route === 'dns-invalid' && ipv6 ? 'not-an-ip' : ipv6 ? '2606:4700:4700::1111' : '93.184.216.34';
+          res.end(JSON.stringify({ Status: failed ? 2 : 0, Answer: failed || route === 'dns-empty' ? [] : [{ type: ipv6 ? 28 : 1, data, TTL: 60 }] }));
         } else res.end('ok');
       });
       const proxy = route === 'secure-proxy' ? createSecureServer(options) : createServer();
@@ -71,13 +74,18 @@ for (const route of ["direct", "proxy", "secure-proxy", "dns"] as const) {
         return connect.call(this, options, ...rest);
       };
       const proxyUrl = (route === 'secure-proxy' ? 'https' : 'http') + '://127.0.0.1:' + proxy.address().port;
-      let error = null, agent;
+      let error = null, agent, addresses = null;
       try {
         if (route === 'direct') {
           const result = await guardedFetch('https://93.184.216.34/item', { route: 'direct' });
           if (result.text() !== 'ok') throw new Error('response lost');
-        } else if (route === 'dns') {
-          await createEgressResolver(proxyUrl)('outbound.invalid');
+        } else if (route.startsWith('dns')) {
+          const resolve = createEgressResolver(proxyUrl);
+          const [first, shared] = await Promise.all([resolve('outbound.invalid'), resolve('outbound.invalid')]);
+          addresses = first;
+          if (JSON.stringify(shared) !== JSON.stringify(first)) throw new Error('coalesced lookup changed');
+          await resolve('outbound.invalid');
+          if (requests.length !== 2) throw new Error('successful lookup was not cached');
         } else {
           agent = createEgressProxy(proxyUrl, async () => ['93.184.216.34']);
           const response = await fetch('https://outbound.invalid/item', { dispatcher: agent, signal: AbortSignal.timeout(2000) });
@@ -89,14 +97,16 @@ for (const route of ["direct", "proxy", "secure-proxy", "dns"] as const) {
         for (const socket of sockets) socket.destroy();
         await Promise.all([origin, proxy].map(server => new Promise(resolve => server.close(resolve))));
       }
-      console.log(JSON.stringify({ requests, tunnels, proxyProtocols: [...new Set(proxyProtocols)], error }));
+      console.log(JSON.stringify({ requests, tunnels, proxyProtocols: [...new Set(proxyProtocols)], addresses, error }));
     `], {
       cwd: new URL("../", import.meta.url), timeout: 10000,
       env: { ...process.env, EGRESS_PROXY_URL: "", ALLOW_PRIVATE_NETWORK_FETCH: "false", NODE_EXTRA_CA_CERTS: cert,
         TEST_TLS_KEY: key, TEST_OUTBOUND_ROUTE: route },
     });
-    const result = JSON.parse(stdout) as { requests: Array<{ version: string; host: string; sni: string }>; tunnels: string[]; proxyProtocols: string[]; error: string | null };
-    assert.equal(result.error, null, JSON.stringify(result));
+    const result = JSON.parse(stdout) as { requests: Array<{ version: string; host: string; sni: string }>; tunnels: string[]; proxyProtocols: string[]; addresses: string[] | null; error: string | null };
+    if (route === "dns-failed") assert.match(result.error ?? "", /DNS lookup failed/, JSON.stringify(result));
+    else if (["dns-empty", "dns-private", "dns-invalid"].includes(route)) assert.match(result.error ?? "", /Blocked proxy address/, JSON.stringify(result));
+    else assert.equal(result.error, null, JSON.stringify(result));
     assert.ok(result.requests.length > 0);
     assert.ok(result.requests.every(request => request.version === "1.1"), JSON.stringify(result));
     if (route === "proxy" || route === "secure-proxy") {
@@ -105,8 +115,10 @@ for (const route of ["direct", "proxy", "secure-proxy", "dns"] as const) {
       assert.equal(result.requests[0]!.sni, "outbound.invalid");
     }
     if (route === "secure-proxy") assert.deepEqual(result.proxyProtocols, ["http/1.1"]);
-    if (route === "dns") {
+    if (route.startsWith("dns")) {
       assert.ok(result.requests.every(request => request.host === "cloudflare-dns.com" && request.sni === "cloudflare-dns.com"));
     }
+    if (route === "dns-a-only") assert.deepEqual(result.addresses, ["93.184.216.34"]);
+    if (route === "dns-aaaa-only") assert.deepEqual(result.addresses, ["2606:4700:4700::1111"]);
   });
 }

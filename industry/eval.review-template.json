@@ -1,0 +1,25 @@
+{
+  "caseId": "replace-with-real-case",
+  "isSynthetic": false,
+  "sourceUrl": "https://replace-with-real-source/",
+  "sourcePublishedAt": null,
+  "reviewer": null,
+  "checks": {
+    "prefilter": "PASS|BLOCK|UNKNOWN",
+    "category": null,
+    "tags": [],
+    "itemType": null,
+    "sourceEvidence": null,
+    "marketRole": {
+      "origin": null,
+      "destination": null
+    },
+    "preservesProductScope": null,
+    "preservesEffectiveDate": null,
+    "noInventedBuyerOrBan": null,
+    "clearBusinessMeaning": null,
+    "actionGroundedInEvidence": null,
+    "groupingCase": null
+  },
+  "notes": null
+}

@@ -1,3 +1,4 @@
+import { formatChineseCopy } from "@aihot/site/format";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Await, isRouteErrorResponse, Link, useAsyncError, useLoaderData, useNavigate, useRevalidator, type ClientLoaderFunctionArgs } from "react-router";
 import type { Route } from "./+types/item";
@@ -127,7 +128,7 @@ async function shareOrCopy(item: Pick<SiteItemDetail, "id" | "title">): Promise<
       await navigator.share({ title: item.title, url });
       return "shared";
     }
-    await navigator.clipboard.writeText(`${item.title}\n${url}`);
+    await navigator.clipboard.writeText(`${formatChineseCopy(item.title)}\n${url}`);
     return "copied";
   } catch {
     return null;
@@ -388,7 +389,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
       {item.reason && !summaryOnly ? (
         <RailSection title={ITEM_COPY.reasonLabel}>
           {verdict && <div className="mb-3">{verdict}</div>}
-          <p className="text-[13.5px] leading-[1.8] text-ink-2">{item.reason}</p>
+          <p className="text-[13.5px] leading-[1.8] text-ink-2">{formatChineseCopy(item.reason)}</p>
         </RailSection>
       ) : (
         verdict && <RailSection title={shownScore(item.score) !== null ? "AI 评分" : undefined}>{verdict}</RailSection>
@@ -472,20 +473,20 @@ function ItemView({ item }: { item: SiteItemDetail }) {
               </span>
             )}
           </div>
-          {!isX && <h1 data-page-title="" className="text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink lg:text-[32px] lg:leading-[1.34] xl:text-[36px] xl:leading-[1.3]">{item.title}</h1>}
+          {!isX && <h1 data-page-title="" className="text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink lg:text-[32px] lg:leading-[1.34] xl:text-[36px] xl:leading-[1.3]">{formatChineseCopy(item.title)}</h1>}
           {!isX && item.originalTitle && <p className="mt-2.5 text-[14px] leading-relaxed text-ink-4">{item.originalTitle}</p>}
 
           {item.summary && (!isX || item.summary.replace(/\s+/g, " ").trim() !== item.title) && (
             <section className={isX ? "mt-4" : "mt-7 xl:mt-8"}>
               <div className="mb-2 text-[12px] font-semibold text-accent">{summaryOnly ? "摘要" : "AI 导读"}</div>
-              <p className="text-[18px] leading-[1.7] text-ink xl:text-[20px] xl:leading-[1.7]">{item.summary}</p>
+              <p className="text-[18px] leading-[1.7] text-ink xl:text-[20px] xl:leading-[1.7]">{formatChineseCopy(item.summary)}</p>
             </section>
           )}
 
           {item.reason && !summaryOnly && (
             <section className="mt-6 border-t border-line pt-4 lg:hidden">
               <div className="mb-1 text-[12px] font-semibold text-ink-3">{ITEM_COPY.reasonLabel}</div>
-              <p className="text-[15px] leading-[1.75] text-ink-2">{item.reason}</p>
+              <p className="text-[15px] leading-[1.75] text-ink-2">{formatChineseCopy(item.reason)}</p>
             </section>
           )}
 
@@ -588,7 +589,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
 
       {posterRequested && (
         <Suspense fallback={null}>
-          <PosterSheet id={item.id} title={item.title} open={posterOpen} onClose={closePoster} />
+          <PosterSheet id={item.id} title={formatChineseCopy(item.title)} open={posterOpen} onClose={closePoster} />
         </Suspense>
       )}
       <Toast text={toast} />

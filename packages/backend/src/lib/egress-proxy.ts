@@ -58,7 +58,7 @@ export function createEgressResolver(proxyUrl: string): Resolve {
     if (!work) {
       work = (async () => {
         const signal = AbortSignal.timeout(5_000);
-        const records = (await Promise.all(["A", "AAAA"].map(async (type) => {
+        const answers = await Promise.allSettled(["A", "AAAA"].map(async (type) => {
           const url = new URL("https://cloudflare-dns.com/dns-query");
           url.search = new URLSearchParams({ name: host, type }).toString();
           const res = await request(url, { dispatcher: dns, signal, headers: { accept: "application/dns-json" } });
@@ -66,7 +66,14 @@ export function createEgressResolver(proxyUrl: string): Resolve {
           const data = await res.body.json() as { Status?: number; Answer?: Array<{ type: number; data: string; TTL: number }> };
           if (data.Status !== 0) throw new Error(`DNS lookup failed for ${host}`);
           return (data.Answer ?? []).filter((a) => a.type === 1 || a.type === 28);
-        }))).flat();
+        }));
+        // An authority can serve A while failing AAAA (or the reverse). Only successful answers
+        // supply connection addresses; every returned address still passes the same safety check.
+        const records = answers.flatMap(answer => answer.status === "fulfilled" ? answer.value : []);
+        if (!records.length) {
+          const failed = answers.find(answer => answer.status === "rejected");
+          if (failed?.status === "rejected") throw failed.reason;
+        }
         const addresses = records.map((r) => r.data);
         if (!addresses.length || addresses.some(isBlockedAddress)) throw new Error(`Blocked proxy address for ${host}`);
         cache.delete(host);

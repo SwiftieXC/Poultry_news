@@ -167,7 +167,7 @@ export async function paidRequest(req: ReceiptRequest, call: () => Promise<CallO
   try {
     outcome = await call();
   } catch (error) {
-    const status = error instanceof ProviderRejectedError ? "failed" : "unknown";
+    const status = error instanceof ProviderRejectedError || error instanceof BudgetExceededError ? "failed" : "unknown";
     // "unknown": the request may have reached the provider (timeout, reset): do not re-send automatically.
     const message = (error instanceof ProviderRejectedError ? error.message : String(error)).slice(0, 2000);
     await sql.begin(async (tx) => {

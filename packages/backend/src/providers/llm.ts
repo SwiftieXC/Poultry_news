@@ -5,6 +5,8 @@
 import type { z } from "zod";
 import { PRESETS } from "@aihot/site/models";
 import { config, credential } from "../config.ts";
+import { sql } from "../db.ts";
+import { callCodex } from "./codex.ts";
 import { sha256 } from "../lib/ids.ts";
 import { assertAccepted, paidRequest, ProviderRejectedError, rejectReceivedResponse } from "./receipts.ts";
 
@@ -12,8 +14,10 @@ export interface ModelSpec {
   key: string;
   service: string;
   model: string;
-  baseUrlEnv: string;
-  apiKeyEnv: string;
+  baseUrlEnv?: string;
+  apiKeyEnv?: string;
+  transport?: "codex-cli";
+  reasoningEffort?: "low" | "medium";
   /** Extra request fields, e.g. switching reasoning off for short structured tasks. */
   extra?: Record<string, unknown>;
   /** Output tokens added to every call's own limit for a reasoning model, which reasons before it answers. */
@@ -130,9 +134,11 @@ export async function chatJson<S extends z.ZodType>(opts: ChatJsonOptions<S>): P
   const spec = MODELS[opts.model];
   if (!spec) throw new Error(`Unknown model ${opts.model}`);
   if (!config.modelCallsEnabled) throw new Error("Model calls are disabled (MODEL_CALLS_ENABLED=false)");
-  const baseUrl = credential("models", spec.baseUrlEnv);
-  const apiKey = credential("models", spec.apiKeyEnv);
-  if (!baseUrl || !apiKey || !spec.model) throw new Error(`Model ${opts.model} is not configured (${spec.baseUrlEnv}, ${spec.apiKeyEnv}${spec.key === "default" ? ", LLM_MODEL" : ""})`);
+  const cli = spec.transport === "codex-cli";
+  const baseUrl = spec.baseUrlEnv ? credential("models", spec.baseUrlEnv) : null;
+  const apiKey = spec.apiKeyEnv ? credential("models", spec.apiKeyEnv) : null;
+  if (!spec.model || (!cli && (!baseUrl || !apiKey))) throw new Error(`Model ${opts.model} is not configured (${spec.baseUrlEnv}, ${spec.apiKeyEnv}${spec.key === "default" ? ", LLM_MODEL" : ""})`);
+  if (cli && !(await sql`SELECT 1 FROM budgets WHERE service=${spec.service}`).length) throw new Error("Codex subscription request budget is not configured; set the codex budget before enabling calls");
 
   const temperature = opts.temperature ?? 0.2;
   const maxTokens = Math.max(opts.maxTokens ?? 1500, 512) + (spec.reasoningTokens ?? 0);
@@ -157,15 +163,22 @@ export async function chatJson<S extends z.ZodType>(opts: ChatJsonOptions<S>): P
       model: spec.model,
       purpose: opts.purpose,
       subject: opts.subject,
-      identity: { model: spec.model, promptVersion: opts.promptVersion, system: sha256(opts.system), user: sha256(userText), temperature, maxTokens, extra: spec.extra ?? null },
-      requestSummary: { promptVersion: opts.promptVersion, systemHash: sha256(opts.system), userHash: sha256(userText), userChars: userText.length, temperature, maxTokens },
+      identity: { model: spec.model, promptVersion: opts.promptVersion, system: sha256(opts.system), user: sha256(userText), temperature, maxTokens, extra: spec.extra ?? null,
+        ...(cli ? { transport: "codex-cli", reasoningEffort: spec.reasoningEffort } : {}) },
+      requestSummary: { promptVersion: opts.promptVersion, systemHash: sha256(opts.system), userHash: sha256(userText), userChars: userText.length,
+        temperature: cli ? null : temperature, maxTokens: cli ? null : maxTokens, ...(cli ? { transport: "codex-cli", reasoningEffort: spec.reasoningEffort } : {}) },
       attemptTag: opts.attemptTag,
     },
     async () => {
+      if (cli) {
+        if (typeof opts.user !== "string" && opts.user.some(part => part.type !== "text")) throw new ProviderRejectedError("Codex subscription transport currently accepts text only", null, false);
+        return callCodex({ model: spec.model, system: opts.system, user: typeof opts.user === "string" ? opts.user : opts.user.map(part => (part as { text: string }).text).join("\n"),
+          json: opts.json !== false, reasoningEffort: spec.reasoningEffort ?? "medium", timeoutMs: opts.timeoutMs ?? 120_000 });
+      }
       const started = Date.now();
       let res: Response;
       try {
-        res = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
+        res = await fetch(`${baseUrl!.replace(/\/$/, "")}/chat/completions`, {
           method: "POST",
           headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
           body: JSON.stringify(body),

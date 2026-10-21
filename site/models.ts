@@ -5,8 +5,11 @@
 export interface ModelPreset {
   service: string;
   model: string;
-  baseUrlEnv: string;
-  apiKeyEnv: string;
+  baseUrlEnv?: string;
+  apiKeyEnv?: string;
+  /** Native subscription transport; HTTP remains the default. */
+  transport?: "codex-cli";
+  reasoningEffort?: "low" | "medium";
   /** 额外的请求字段，比如短小的结构化任务关掉推理。 */
   extra?: Record<string, unknown>;
   /** 推理模型先想再答，额外给推理留的输出额度（token），加在每一步自己的额度上。default 用环境变量 LLM_REASONING_TOKENS。 */
@@ -17,8 +20,10 @@ export interface ModelPreset {
   vision?: boolean;
 }
 
-/** 具名的模型示例（每个要配自己的密钥）。用不上可以删掉。 */
+/** 具名模型：HTTP 预设各配密钥；Codex 预设使用本机 ChatGPT 登录。 */
 export const PRESETS: Record<string, ModelPreset> = {
+  "codex-luna-low": { service: "codex", model: "gpt-6-luna", transport: "codex-cli", reasoningEffort: "low", jsonMode: true },
+  "codex-luna": { service: "codex", model: "gpt-6-luna", transport: "codex-cli", reasoningEffort: "medium", jsonMode: true },
   // GLM 5.3 Flash always reasons; the lowest effort keeps short structured tasks fast.
   "glm-5.3-flash": {
     service: "zhipu", model: "glm-5.3-flash", baseUrlEnv: "ZHIPU_BASE_URL", apiKeyEnv: "ZHIPU_API_KEY",

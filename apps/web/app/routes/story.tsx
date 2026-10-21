@@ -1,3 +1,4 @@
+import { formatChineseCopy } from "@aihot/site/format";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { IntentLink } from "../components/ui/IntentLink";
 import { Link, useLoaderData, useLocation } from "react-router";
@@ -209,7 +210,7 @@ export default function StoryPage() {
 
   return (
     <div className="mx-auto max-w-[var(--page-max-reading)] pb-10">
-      <PhoneBar back={{ to: "/hot", label: "热点" }} title={story.title} />
+      <PhoneBar back={{ to: "/hot", label: "热点" }} title={formatChineseCopy(story.title)} />
       <nav aria-label="位置" className="hidden items-center gap-2.5 pb-5 pt-4 text-[12px] text-ink-4 lg:flex">
         <Link to="/hot" className="inline-flex items-center gap-1.5 transition-colors hover:text-ink">
           <IconArrowLeft size={15} /> 热点榜
@@ -223,7 +224,7 @@ export default function StoryPage() {
           热点事件
           <Badge tone={status.tone}>{status.label}</Badge>
         </div>
-        <h1 data-page-title="" className="mt-2.5 text-[27px] font-bold leading-[1.5] tracking-[-0.01em] text-ink lg:mt-3 lg:text-[36px] lg:font-[730]">{story.title}</h1>
+        <h1 data-page-title="" className="mt-2.5 text-[27px] font-bold leading-[1.5] tracking-[-0.01em] text-ink lg:mt-3 lg:text-[36px] lg:font-[730]">{formatChineseCopy(story.title)}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-[12.5px] text-ink-3">
           <span className="inline-flex items-center gap-1.5">
             <IconDoc size={15} className="text-ink-4" />

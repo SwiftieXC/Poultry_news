@@ -26,6 +26,26 @@ export interface ExtractedBody {
 }
 
 const MIN_BODY_CHARS = 200;
+const AUTH_PATH = /(?:^|[/])(?:login|log-in|signin|sign-in|register|signup|sign-up|authorize|oauth2?|sso|auth)(?:[/]|$)/i;
+
+/** Login and registration endpoints are navigation, not article evidence. Match whole path segments only. */
+export function isSignInUrl(url: string): boolean {
+  try {
+    return AUTH_PATH.test(new URL(url).pathname);
+  } catch {
+    return false;
+  }
+}
+
+/** A page that landed on a sign-in form was not the requested article. */
+export function isSignInRedirect(asked: string, landed: string): boolean {
+  try {
+    // A requested page already on a register path remains itself when only a trailing slash is added.
+    return !AUTH_PATH.test(new URL(asked).pathname) && AUTH_PATH.test(new URL(landed).pathname);
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Readability leaves out what an inline style hides, but compares style.display and style.visibility
@@ -64,6 +84,8 @@ export function readable(html: string, url: string, utcOffset?: string): Extract
     // no head
   }
   settleInlineVisibility(document);
+  // WP RGPD dialogs can outscore the article; their consent text is page chrome, not evidence.
+  for (const el of document.querySelectorAll("#rgpdCustomBox, #myModalrgpd")) el.remove();
   const article = new Readability(document as unknown as ConstructorParameters<typeof Readability>[0], { charThreshold: MIN_BODY_CHARS, keepClasses: false }).parse();
   if (!article?.content) return null;
   const clean = trimTrailingChrome(sanitizeBody(article.content, url));
@@ -84,6 +106,7 @@ export async function extractFromUrl(url: string, subject: string, utcOffset?: s
   try {
     const res = await guardedFetch(url, { timeoutMs: 20_000, maxBytes: 6 * 1024 * 1024 });
     if (isVideoPageUrl(res.url)) return null;
+    if (isSignInRedirect(url, res.url)) return null;
     const type = res.headers.get("content-type") ?? "";
     if (res.status === 200 && /html/.test(type)) {
       const got = readable(res.text(), res.url, utcOffset);

@@ -1,153 +1,51 @@
-// 这个行业的分类体系：类别、标签词表、公司（主体）名录，以及防止张冠李戴的身份词典。
-// 模型按这里的词表打标签，主题页（topics.json）按标签归类，筛选栏按类别分组。
-// 换行业时：类别的 key 会出现在网址里（/all?category=…），上线后就不要再改；标签和名录可以随时增减。
-
-/**
- * 网页上的类别（筛选栏、卡片角标、RSS 分类订阅）。key 是网址和接口里的身份，上线后不要改。
- * section 是日报里的分节标题（几个类别可以共用一节，按这里的顺序排）；guide 告诉结构抽取模型这一类收什么、
- * 和相邻类别的边界在哪（总的归类原则写在 prompts/structure.md 里）。
- * commentary 标出评论类（教程、观点）：日报写过的事又有评论类的后续报道，只占一行快讯（报道它的信源够多时除外）。
- * 没归上类的资料在日报里放进第一个 key 为 industry 的类别所在的节（没有就放最后一节）。
- * feedLabel 是分类 RSS 标题里的名字（不写就用 label）。公开接口、RSS 和 MCP 里要把一类并进另一类发布，写在站点设置里（site/site.ts 的 PUBLIC_CATEGORIES）。
- */
+// Poultry trade vocabulary. Category keys and entity ids are stable public identities.
 export const CATEGORIES = [
-  { key: "ai-models", label: "模型", feedLabel: "AI 模型", section: "模型发布/更新", guide: "模型本身的发布、版本、权重开放、能力或价格变化，以及既有榜单上的模型成绩。公布一次跑分不是发布新基准，也不是教程。" },
-  { key: "ai-products", label: "产品", feedLabel: "AI 产品", section: "产品发布/更新", guide: "可使用的 AI 产品、功能、应用、工具、API、平台和工程组件的发布更新。模型厂商发布的推理框架、算子库、硬件适配组件仍是产品，不能因为厂商名归成模型。" },
-  { key: "industry", label: "行业", feedLabel: "行业动态", section: "行业动态", guide: "已发生的公司经营、融资并购、人事、合作、诉讼、政策、真实安全事故及调查进展。新闻由当事人发帖、带有态度，也不因此变成观点。" },
-  { key: "paper", label: "论文", feedLabel: "论文", section: "论文研究", guide: "以新研究方法、实验设计与发现为核心的论文、技术报告、新基准或研究数据集。系统性红队实验属于研究；既有榜单成绩归模型，真实事故的新闻调查归行业。" },
-  { key: "tip", label: "教程", section: "技巧与观点", guide: "读者可以照着使用的方法、提示词、工具用法、工程实践复盘与技术讲解。重点是可复用的做法；单纯发布工具归产品，只有态度和预测而无做法归观点。", commentary: true },
-  { key: "opinion", label: "观点", section: "技巧与观点", guide: "重点是作者的解释、判断、主张、预测、评论或访谈观点。讨论市场不自动归行业，作者是名人不自动归观点。", commentary: true },
+  {"key": "regulation_access", "label": "政策与准入", "section": "政策与准入", "guide": "准入、工厂注册、卫生证书、检疫、Halal、关税、禁运和恢复准入。官方限制公告优先归本类；单纯发现疫情归疫情与风险。"},
+  {"key": "trade_flow", "label": "进出口数据", "section": "进出口数据", "guide": "有来源和统计期的进出口量、金额、份额与流向变化。市场预测不当成实测贸易，报价不当成进出口量。"},
+  {"key": "market_demand", "label": "市场与需求", "section": "市场与需求", "guide": "消费、产品规格、渠道需求和市场规模的证据。具体买家采购动作归客户与渠道；单店菜品上新不收。"},
+  {"key": "competitor", "label": "企业与竞争", "section": "企业与竞争", "guide": "企业出口、扩产、投资、新工厂、新产品、并购与合作。核心为企业动作；具体采购归客户与渠道，宏观供应归供给与价格。"},
+  {"key": "buyer_channel", "label": "客户与渠道", "section": "客户与渠道", "guide": "进口商、经销商、冷链、零售、餐饮集团的采购、招标、供应商调整及渠道动作。参展和企业目录不等于采购。"},
+  {"key": "supply_price", "label": "供给与价格", "section": "供给与价格", "guide": "巴西、泰国等产量、库存、供应量、报价与成本变化。标清币种、单位、贸易条件与市场；不把不同价格口径直接比较。"},
+  {"key": "biosecurity_risk", "label": "疫情与风险", "section": "疫情与风险", "guide": "禽流感、食品召回、残留、食品安全和物流中断。疫情不自动等于禁运；已有进口限制公告按政策与准入分类。"}
 ] as const satisfies ReadonlyArray<{ key: string; label: string; feedLabel?: string; section: string; guide: string; commentary?: true }>;
 
-/**
- * 这个行业最受关注的一类发布（AI 行业是新模型）：日报报头的“N 个新模型”、改分类后修订已出的报告都按它数。
- * category 是类别，tag 是标签，两者都对上才算；unit 接在数字后面。
- * 没有这样一类的行业设成 null，报头就不显示这个数。
- */
-export const RELEASE: { category: string; tag: string; unit: string } | null = { category: "ai-models", tag: "模型发布", unit: "个新模型" };
-
-/** 周报月报的总述可以直接写、不必在报道里找到出处的行业通用词（小写）。站名会自动算进去。 */
-export const PLAIN_TERMS: readonly string[] = ["ai", "api", "llm", "gpu", "agi", "ceo", "ipo"];
-
-/**
- * 内容理解一步给每篇资料判的“内容类型”（写在 prompts/content-understanding.md 里，改了类型要同步改那份提示词）。
- * 评分提示词（prompts/selection-score.md）按类型给五个维度不同的权重。
- */
-export const ITEM_TYPES = ["model_release", "product_launch", "tool_or_prompt", "research_paper", "industry_event", "opinion_analysis", "tutorial_explainer"] as const;
-
-// ── 标签词表 ────────────────────────────────────────────────────────────────────────────
-
-/** 每篇资料的第一个标签必须是这些“分类标签”之一。 */
-export const CATEGORY_TAGS = [
-  "产品更新", "模型发布", "论文/研究", "开源/仓库", "教程/实践", "现象/趋势", "大佬观点", "评测/基准", "安全/对齐", "行业动态", "政策/监管",
-  "非AI/通用工具", "其他",
-] as const;
-
-/** 可选的主题标签。 */
-export const TOPIC_TAGS = [
-  "Agent", "编码", "推理", "多模态", "语音", "视频", "图像生成", "RAG", "端侧", "数据/训练", "搜索", "部署/工程", "开源生态", "具身智能", "MCP/工具调用",
-] as const;
-
-/** 可选的实体标签（公司、机构、平台）。 */
-export const ENTITY_TAGS = ["OpenAI", "Anthropic", "DeepSeek", "DeepMind", "Google", "Meta", "Microsoft", "xAI", "Hugging Face", "GitHub", "arXiv"] as const;
-
-/** 模型常写的近义词，统一成词表里的写法。 */
-export const TAG_SYNONYMS: Readonly<Record<string, string>> = {
-  "教程/玩法": "教程/实践", "技巧/最佳实践": "教程/实践", "合作/生态": "行业动态", "融资/收购": "行业动态", "公司动态": "行业动态",
-  合作: "行业动态", 生态: "行业动态", 融资: "行业动态", 收购: "行业动态", 投资: "行业动态", 并购: "行业动态",
-  政策: "政策/监管", 监管: "政策/监管", 法规: "政策/监管", 安全: "安全/对齐", 对齐: "安全/对齐",
-  论文: "论文/研究", 研究: "论文/研究", paper: "论文/研究", papers: "论文/研究",
-  "open-source": "开源/仓库", 开源: "开源/仓库", 仓库: "开源/仓库", repo: "开源/仓库",
-  教程: "教程/实践", 玩法: "教程/实践", 指南: "教程/实践", 技巧: "教程/实践", 最佳实践: "教程/实践", 实践: "教程/实践",
-  产品: "产品更新", 更新: "产品更新", 发布: "模型发布", 模型: "模型发布", 趋势: "现象/趋势", 现象: "现象/趋势", 观点: "大佬观点",
-  视频生成: "视频", 非ai: "非AI/通用工具", "non-ai": "非AI/通用工具", 通用工具: "非AI/通用工具", 工程工具: "非AI/通用工具",
-  安全扫描: "非AI/通用工具", devops: "非AI/通用工具", 行业: "行业动态", 动态: "行业动态",
-};
-
-// ── 公司与主体 ──────────────────────────────────────────────────────────────────────────
-
-/**
- * 公司主题：id → 显示名、卡片上显示的标签（null 表示只用 entity:<id> 归类）、别名。
- * aliases 给结构抽取模型看；otherNames 是公司自己的其他称呼（官方账号名、子品牌），
- * 把事实的主体对到发布方时也认它们。
- */
-export const ENTITIES: Record<string, { name: string; displayTag: string | null; aliases: string[]; otherNames?: string[] }> = {
-  "world-labs": { name: "World Labs", displayTag: null, aliases: ["World Labs"] },
-  "thinking-machines": { name: "Thinking Machines Lab", displayTag: null, aliases: ["Thinking Machines"] },
-  amd: { name: "AMD", displayTag: null, aliases: ["AMD", "Advanced Micro Devices"] },
-  openai: { name: "OpenAI", displayTag: "OpenAI", aliases: ["OpenAI", "ChatGPT", "Sora", "Codex", "GPT"], otherNames: ["OpenAI Developers"] },
-  anthropic: { name: "Anthropic", displayTag: "Anthropic", aliases: ["Anthropic", "Claude"], otherNames: ["Claude Code"] },
-  google: { name: "Google", displayTag: "Google", aliases: ["Google", "DeepMind", "Gemini", "谷歌"], otherNames: ["Google DeepMind", "Google Research", "Google AI", "Google Labs", "Google Cloud"] },
-  deepseek: { name: "DeepSeek", displayTag: "DeepSeek", aliases: ["DeepSeek", "深度求索"] },
-  qwen: { name: "千问 Qwen", displayTag: null, aliases: ["Qwen", "通义", "阿里"], otherNames: ["通义千问", "千问", "千问APP", "Qwen Team", "通义实验室", "阿里巴巴", "Alibaba", "阿里云", "Alibaba Cloud"] },
-  kimi: { name: "Kimi / 月之暗面", displayTag: null, aliases: ["Kimi", "月之暗面", "Moonshot"], otherNames: ["Moonshot AI"] },
-  minimax: { name: "MiniMax", displayTag: null, aliases: ["MiniMax", "海螺"], otherNames: ["稀宇科技"] },
-  zhipu: { name: "智谱 GLM", displayTag: null, aliases: ["智谱", "GLM", "Z.ai"], otherNames: ["智谱AI", "Zhipu", "Zhipu AI"] },
-  xai: { name: "xAI", displayTag: "xAI", aliases: ["xAI", "Grok"], otherNames: ["SpaceXAI"] },
-  meta: { name: "Meta", displayTag: "Meta", aliases: ["Meta", "Llama"], otherNames: ["Meta AI", "AI at Meta"] },
-  microsoft: { name: "Microsoft", displayTag: "Microsoft", aliases: ["Microsoft", "微软", "Copilot"], otherNames: ["Microsoft Research", "Microsoft AI"] },
-  nvidia: { name: "NVIDIA", displayTag: null, aliases: ["NVIDIA", "英伟达"] },
-  "hugging-face": { name: "Hugging Face", displayTag: "Hugging Face", aliases: ["Hugging Face"], otherNames: ["HuggingFace"] },
-  cursor: { name: "Cursor", displayTag: null, aliases: ["Cursor", "Anysphere"] },
-  openrouter: { name: "OpenRouter", displayTag: null, aliases: ["OpenRouter"] },
-};
-
-/**
- * 身份词典：摘要和标题里出现的公司，必须在原文里也出现过，否则退回原标题、丢掉摘要（防止模型张冠李戴）。
- * 行业没有这个问题时可以留空数组。
- */
+// No launch counter: market access is too conditional to count as an unconditional release.
+export const RELEASE: { category: string; tag: string; unit: string } | null = null;
+export const PLAIN_TERMS: readonly string[] = ["hs", "halal", "haccp", "sps", "tbt", "mena", "cif", "fob", "禽肉", "鸡肉", "进口", "出口"];
+export const ITEM_TYPES = ["regulation", "official_data", "company_action", "buyer_signal", "market_signal", "disease_alert", "industry_analysis", "general_news"] as const;
+export const CATEGORY_TAGS = ["政策与准入", "进出口数据", "市场与需求", "企业与竞争", "客户与渠道", "供给与价格", "疫情与风险", "其他"] as const;
+export const TOPIC_TAGS = ["中国", "日本", "沙特阿拉伯", "阿联酋", "埃及", "巴西", "泰国", "全球", "禽肉", "鸡肉", "鸭肉", "生鲜禽肉", "冷冻禽肉", "分割品", "熟制禽肉", "深加工禽肉", "调理品", "鸡胸", "鸡腿", "鸡翅", "整鸡", "副产品", "新增准入", "取消准入", "恢复准入", "工厂注册", "新规", "标准修改", "检疫变化", "Halal", "HACCP", "进口增长", "进口下降", "出口增长", "出口下降", "价格上涨", "价格下降", "成本上涨", "扩产", "减产", "供应短缺", "库存增加", "新工厂", "新产品", "投资", "并购", "合作", "采购", "招标", "供应商调整", "禽流感", "禁运", "召回", "食品安全", "供应链中断", "市场缺口", "竞争国受限", "需求增长", "供应替代", "潜在商机", "风险信号"] as const;
+export const ENTITY_TAGS = ["圣农发展", "凤祥股份", "春雪食品", "禾丰股份", "仙坛股份", "BRF", "JBS", "Aurora", "CP Foods", "Betagro", "GFPT", "Saha Farms", "中国海关", "农业农村部", "MAFF", "MHLW", "AQS", "SFDA", "MOCCAE", "Egypt GOVS", "ABPA", "MAPA", "TBPEA", "Thai DLD", "WOAH", "WTO"] as const;
+export const TAG_SYNONYMS: Readonly<Record<string, string>> = {"沙特": "沙特阿拉伯", "UAE": "阿联酋", "uae": "阿联酋", "Saudi Arabia": "沙特阿拉伯", "清真": "Halal", "清真认证": "Halal", "熟制鸡肉": "熟制禽肉", "冷冻鸡肉": "冷冻禽肉", "恢复进口": "恢复准入", "商机": "潜在商机", "机会": "潜在商机", "风险": "风险信号", "CP Foods": "CP Foods", "CPF": "CP Foods", "Seara": "JBS", "政策": "政策与准入", "疫情": "疫情与风险"};
+export const ENTITIES: Readonly<Record<string, { name: string; displayTag: string | null; aliases: readonly string[]; otherNames?: readonly string[] }>> = {"sunner": {"name": "圣农发展", "displayTag": "圣农发展", "aliases": ["圣农发展", "圣农", "Sunner"], "otherNames": ["圣农食品"]}, "fengxiang": {"name": "凤祥股份", "displayTag": "凤祥股份", "aliases": ["凤祥股份", "凤祥", "Fengxiang"]}, "spring-snow": {"name": "春雪食品", "displayTag": "春雪食品", "aliases": ["春雪食品", "春雪", "Spring Snow Food"]}, "wellhope": {"name": "禾丰股份", "displayTag": "禾丰股份", "aliases": ["禾丰股份", "禾丰", "Wellhope"]}, "xiantan": {"name": "仙坛股份", "displayTag": "仙坛股份", "aliases": ["仙坛股份", "仙坛", "Xiantan"]}, "brf": {"name": "BRF", "displayTag": "BRF", "aliases": ["BRF"], "otherNames": ["Sadia", "Perdigão"]}, "jbs": {"name": "JBS", "displayTag": "JBS", "aliases": ["JBS", "Seara"]}, "aurora": {"name": "Aurora", "displayTag": "Aurora", "aliases": ["Aurora Alimentos", "Aurora Coop"]}, "cpf": {"name": "CP Foods", "displayTag": "CP Foods", "aliases": ["CP Foods", "CPF", "Charoen Pokphand Foods"], "otherNames": ["正大食品"]}, "betagro": {"name": "Betagro", "displayTag": "Betagro", "aliases": ["Betagro", "倍高"]}, "gfpt": {"name": "GFPT", "displayTag": "GFPT", "aliases": ["GFPT"]}, "saha-farms": {"name": "Saha Farms", "displayTag": "Saha Farms", "aliases": ["Saha Farms"]}, "gacc": {"name": "中国海关", "displayTag": "中国海关", "aliases": ["中国海关", "海关总署", "GACC"]}, "mara": {"name": "农业农村部", "displayTag": "农业农村部", "aliases": ["农业农村部", "MARA"]}, "maff": {"name": "MAFF", "displayTag": "MAFF", "aliases": ["MAFF", "農林水産省", "日本农林水产省"]}, "mhlw": {"name": "MHLW", "displayTag": "MHLW", "aliases": ["MHLW", "厚生労働省", "日本厚生劳动省"]}, "aqs": {"name": "AQS", "displayTag": "AQS", "aliases": ["AQS", "動物検疫所", "日本动物检疫所"]}, "sfda": {"name": "SFDA", "displayTag": "SFDA", "aliases": ["SFDA", "Saudi Food and Drug Authority", "沙特食品药品管理局"]}, "moccae": {"name": "MOCCAE", "displayTag": "MOCCAE", "aliases": ["MOCCAE", "阿联酋气候变化与环境部"]}, "govs": {"name": "Egypt GOVS", "displayTag": "Egypt GOVS", "aliases": ["GOVS", "General Organization for Veterinary Services"]}, "abpa": {"name": "ABPA", "displayTag": "ABPA", "aliases": ["ABPA", "Associação Brasileira de Proteína Animal", "巴西动物蛋白协会"]}, "mapa": {"name": "MAPA", "displayTag": "MAPA", "aliases": ["MAPA", "Ministério da Agricultura e Pecuária", "巴西农业部"]}, "tbpea": {"name": "TBPEA", "displayTag": "TBPEA", "aliases": ["TBPEA", "Thai Broiler Processing Exporters Association"]}, "dld": {"name": "Thai DLD", "displayTag": "Thai DLD", "aliases": ["DLD", "Department of Livestock Development", "泰国畜牧发展厅"]}, "woah": {"name": "WOAH", "displayTag": "WOAH", "aliases": ["WOAH", "OIE", "世界动物卫生组织"], "otherNames": ["WAHIS"]}, "wto": {"name": "WTO", "displayTag": "WTO", "aliases": ["WTO", "世界贸易组织"], "otherNames": ["ePing"]}};
 export const IDENTITY_LEXICON: ReadonlyArray<{ id: string; name: string; patterns: RegExp[] }> = [
-  { id: "openai", name: "OpenAI", patterns: [/openai|chatgpt|\bgpt-?[o\d]|\bsora\b|\bcodex\b/i] },
-  { id: "anthropic", name: "Anthropic", patterns: [/anthropic|\bclaude\b/i, /\b(?:opus|sonnet|haiku)\s*\d+(?:[.\-]\d+)*\b/i, /\bfable\s*\d+(?:[.\-]\d+)*\b|\bmythos\b/i] },
-  { id: "google", name: "Google / Gemini", patterns: [/google|deepmind|\bgemini\b|notebooklm|\bveo\s?\d|\bAlphaFold\b|\bAMIE\b/i] },
-  { id: "deepseek", name: "DeepSeek", patterns: [/deepseek|深度求索/i] },
-  { id: "xai", name: "xAI / Grok", patterns: [/\bxai\b|\bgrok\b/i] },
-  { id: "meta", name: "Meta / Llama", patterns: [/\bMeta\b/, /\bmeta\s?ai\b|\bllama\b/i] },
-  { id: "microsoft", name: "Microsoft / Copilot", patterns: [/microsoft|copilot|微软/i] },
-  { id: "nvidia", name: "NVIDIA", patterns: [/nvidia|英伟达|\bnemotron\b|\bnemo\b|\bblackwell\b|\brubin(?:\s+ultra)?\b|\bcuda\b/i] },
-  { id: "qwen", name: "千问 Qwen", patterns: [/\bqwen|通义|千问/i] },
-  { id: "hugging-face", name: "Hugging Face", patterns: [/hugging\s?face/i] },
-  { id: "cursor", name: "Cursor", patterns: [/\bCursor\b/] },
-  { id: "kimi", name: "Kimi / 月之暗面", patterns: [/\bkimi\b|月之暗面|\bmoonshot\s?ai\b/i] },
-  { id: "openrouter", name: "OpenRouter", patterns: [/openrouter/i] },
-  { id: "minimax", name: "MiniMax", patterns: [/minimax/i] },
-  { id: "zhipu", name: "智谱 GLM", patterns: [/智谱|\bglm-?[4-9]/i] },
-  { id: "hunyuan", name: "腾讯混元", patterns: [/混元|hunyuan/i] },
-  { id: "doubao", name: "字节豆包", patterns: [/豆包|doubao|字节跳动|bytedance/i] },
-  { id: "mistral", name: "Mistral", patterns: [/mistral/i] },
-  { id: "perplexity", name: "Perplexity", patterns: [/\bPerplexity\b/] },
-  { id: "runway", name: "Runway", patterns: [/\brunway\b/i] },
-  { id: "suno", name: "Suno", patterns: [/\bsuno\b/i] },
-  { id: "midjourney", name: "Midjourney", patterns: [/midjourney/i] },
-  { id: "stability-ai", name: "Stability AI", patterns: [/stability\s?ai/i] },
-  { id: "elevenlabs", name: "ElevenLabs", patterns: [/eleven\s?labs/i] },
-  { id: "vllm", name: "vLLM", patterns: [/\bvllm\b/i] },
-  { id: "ollama", name: "Ollama", patterns: [/\bollama\b/i] },
-  { id: "windsurf", name: "Windsurf", patterns: [/windsurf/i] },
-  { id: "devin", name: "Devin", patterns: [/\bdevin\b/i] },
-  { id: "manus", name: "Manus", patterns: [/\bmanus\b/i] },
-  { id: "apple", name: "Apple AI", patterns: [/\bapple\s?(intelligence|silicon|ai)\b|苹果(智能|\s?AI)/i] },
-  { id: "amazon", name: "Amazon / AWS", patterns: [/amazon|\baws\b|亚马逊/i] },
-  { id: "baidu", name: "百度文心", patterns: [/百度|baidu|文心|\bernie\s?bot\b/i] },
+  { id: "sunner", name: "圣农发展", patterns: [/圣农发展|圣农|\bSunner\b|圣农食品/i] },
+  { id: "fengxiang", name: "凤祥股份", patterns: [/凤祥股份|凤祥|\bFengxiang\b/i] },
+  { id: "spring-snow", name: "春雪食品", patterns: [/春雪食品|春雪|Spring\ Snow\ Food/i] },
+  { id: "wellhope", name: "禾丰股份", patterns: [/禾丰股份|禾丰|\bWellhope\b/i] },
+  { id: "xiantan", name: "仙坛股份", patterns: [/仙坛股份|仙坛|\bXiantan\b/i] },
+  { id: "brf", name: "BRF", patterns: [/\bBRF\b|\bSadia\b|Perdigão/i] },
+  { id: "jbs", name: "JBS", patterns: [/\bJBS\b|\bSeara\b/i] },
+  { id: "aurora", name: "Aurora", patterns: [/Aurora\ Alimentos|Aurora\ Coop/i] },
+  { id: "cpf", name: "CP Foods", patterns: [/CP\ Foods|\bCPF\b|Charoen\ Pokphand\ Foods|正大食品/i] },
+  { id: "betagro", name: "Betagro", patterns: [/\bBetagro\b|倍高/i] },
+  { id: "gfpt", name: "GFPT", patterns: [/\bGFPT\b/i] },
+  { id: "saha-farms", name: "Saha Farms", patterns: [/Saha\ Farms/i] },
+  { id: "gacc", name: "中国海关", patterns: [/中国海关|海关总署|\bGACC\b/i] },
+  { id: "mara", name: "农业农村部", patterns: [/农业农村部|\bMARA\b/i] },
+  { id: "maff", name: "MAFF", patterns: [/\bMAFF\b|農林水産省|日本农林水产省/i] },
+  { id: "mhlw", name: "MHLW", patterns: [/\bMHLW\b|厚生労働省|日本厚生劳动省/i] },
+  { id: "aqs", name: "AQS", patterns: [/\bAQS\b|動物検疫所|日本动物检疫所/i] },
+  { id: "sfda", name: "SFDA", patterns: [/\bSFDA\b|Saudi\ Food\ and\ Drug\ Authority|沙特食品药品管理局/i] },
+  { id: "moccae", name: "MOCCAE", patterns: [/\bMOCCAE\b|阿联酋气候变化与环境部/i] },
+  { id: "govs", name: "Egypt GOVS", patterns: [/\bGOVS\b|General\ Organization\ for\ Veterinary\ Services/i] },
+  { id: "abpa", name: "ABPA", patterns: [/\bABPA\b|Associação\ Brasileira\ de\ Proteína\ Animal|巴西动物蛋白协会/i] },
+  { id: "mapa", name: "MAPA", patterns: [/\bMAPA\b|Ministério\ da\ Agricultura\ e\ Pecuária|巴西农业部/i] },
+  { id: "tbpea", name: "TBPEA", patterns: [/\bTBPEA\b|Thai\ Broiler\ Processing\ Exporters\ Association/i] },
+  { id: "dld", name: "Thai DLD", patterns: [/\bDLD\b|Department\ of\ Livestock\ Development|泰国畜牧发展厅/i] },
+  { id: "woah", name: "WOAH", patterns: [/\bWOAH\b|\bOIE\b|世界动物卫生组织|\bWAHIS\b/i] },
+  { id: "wto", name: "WTO", patterns: [/\bWTO\b|世界贸易组织|\bePing\b/i] }
 ];
-
-/** 这些域名上的文章，发布方就是对应的公司（托管平台如 GitHub、arXiv 不算）。 */
-export const PUBLISHER_DOMAINS: ReadonlyArray<{ entityId: string; domains: readonly string[] }> = [
-  { entityId: "openai", domains: ["openai.com"] },
-  { entityId: "anthropic", domains: ["anthropic.com", "claude.com"] },
-  { entityId: "google", domains: ["deepmind.google", "ai.google", "blog.google"] },
-  { entityId: "deepseek", domains: ["deepseek.com"] },
-  { entityId: "xai", domains: ["x.ai"] },
-  { entityId: "meta", domains: ["ai.meta.com"] },
-  { entityId: "microsoft", domains: ["microsoft.com"] },
-  { entityId: "nvidia", domains: ["nvidia.com"] },
-  { entityId: "qwen", domains: ["qwen.ai"] },
-  { entityId: "cursor", domains: ["cursor.com"] },
-  { entityId: "openrouter", domains: ["openrouter.ai"] },
-];
-
-/** 原文里的这些写法也算提到了对应公司。 */
-export const IDENTITY_CONTEXT_ALIASES: ReadonlyArray<{ entityId: string; pattern: RegExp }> = [
-  { entityId: "meta", pattern: /@AIatMeta\b/i },
-  { entityId: "zhipu", pattern: /\bZhipu(?:\s+AI\b|['’]s\b)/i },
-];
+export const PUBLISHER_DOMAINS: ReadonlyArray<{ entityId: string; domains: readonly string[] }> = [{"entityId":"brf","domains":["brf-global.com"]},{"entityId":"jbs","domains":["jbs.com.br"]},{"entityId": "gacc", "domains": ["customs.gov.cn"]}, {"entityId": "mara", "domains": ["moa.gov.cn"]}, {"entityId": "maff", "domains": ["maff.go.jp"]}, {"entityId": "mhlw", "domains": ["mhlw.go.jp"]}, {"entityId": "sfda", "domains": ["sfda.gov.sa"]}, {"entityId": "moccae", "domains": ["moccae.gov.ae"]}, {"entityId": "abpa", "domains": ["abpa-br.org"]}, {"entityId": "cpf", "domains": ["cpfworldwide.com"]}];
+// AQS pages share maff.go.jp; do not assign the entire ministry domain to AQS.
+export const IDENTITY_CONTEXT_ALIASES: ReadonlyArray<{ entityId: string; pattern: RegExp }> = [];

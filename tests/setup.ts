@@ -41,6 +41,7 @@ export function pointModels(url: string, models = ["qwen3.7-flash", "glm-5.3-fla
   for (const name of models) {
     const preset = PRESETS[name];
     if (!preset) throw new Error(`the site has no model preset ${name}`);
+    if (!preset.baseUrlEnv || !preset.apiKeyEnv) throw new Error(`test HTTP stub cannot configure native transport ${name}`);
     env[preset.baseUrlEnv] = `${url}/v1`;
     env[preset.apiKeyEnv] = "test-key";
   }

@@ -1,368 +1,340 @@
 {
-  "$comment": "示范信源：首次启动时导入（scripts/seed.ts），已存在的不会被覆盖。之后在后台“信源”里新建、修改和暂停。字段说明见 docs/customize.md。",
+  "$comment": "Only live-probed, parser-verified entrances. Other P0 candidates are tracked separately; no placeholders are seeded. See docs/SOURCES_V1.md.",
   "sources": [
     {
-      "id": "rss-openai-news",
-      "name": "OpenAI News",
+      "id": "poultrytimes-news",
+      "name": "Poultry Times 行业媒体",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://openai.com/news/rss.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "openai",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-google-deepmind",
-      "name": "Google DeepMind",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://deepmind.google/blog/rss.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "google",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-google-research",
-      "name": "Google Research",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://research.google/blog/rss/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "google",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方",
-        "研究"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-hugging-face",
-      "name": "Hugging Face Blog",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://huggingface.co/blog/feed.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "hugging-face",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方",
-        "开源"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-microsoft-research",
-      "name": "Microsoft Research",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.microsoft.com/en-us/research/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "microsoft",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方",
-        "研究"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-nvidia-blog",
-      "name": "NVIDIA Blog",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://blogs.nvidia.com/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": "nvidia",
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-aws-ml",
-      "name": "AWS Machine Learning Blog",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://aws.amazon.com/blogs/machine-learning/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方",
-        "教程"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-github-ai",
-      "name": "GitHub Blog · AI & ML",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://github.blog/ai-and-ml/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-mistral",
-      "name": "Mistral AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://mistral.ai/news/rss",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "官方"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-bair",
-      "name": "Berkeley AI Research",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://bair.berkeley.edu/blog/feed.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
-      },
-      "tier": "T1",
-      "owner_entity_id": null,
-      "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "研究"
-      ],
-      "site_fulltext": false,
-      "syndicate_fulltext": false
-    },
-    {
-      "id": "rss-the-verge-ai",
-      "name": "The Verge · AI",
-      "kind": "rss",
-      "config": {
-        "feedUrl": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
-        "_aihot": {
-          "initialBackfillLimit": 8
+        "feedUrl": "https://www.poultrytimes.com/feed/",
+        "allowUrlPrefixes": ["https://www.poultrytimes.com/"],
+        "denyUrlPrefixes": ["https://www.poultrytimes.com/category/", "https://www.poultrytimes.com/author/", "https://www.poultrytimes.com/comments/"],
+        "denyCategories": ["Sponsored Content"],
+        "publisherRole": "organization",
+        "_aihot": { "initialBackfillLimit": 3 },
+        "ingestNoiseFilter": {
+          "dropMarkersTitleOnly": ["IFEEDER", "award recipient", "celebrates", "poultry summit", "research institute", "gut resilience", "egg demand"],
+          "keepIfMatches": ["poultry exports", "chicken exports", "poultry imports", "chicken imports", "processing capacity", "acquire", "acquisition", "recall"]
         }
       },
       "tier": "T2",
       "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 60,
-      "tags": [
-        "媒体"
-      ],
+      "interval_minutes": 360,
+      "enabled": true,
+      "tags": [],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-techcrunch-ai",
-      "name": "TechCrunch · AI",
-      "kind": "rss",
+      "id": "wellhope-news",
+      "name": "中国禾丰食品新闻",
+      "kind": "web_list",
       "config": {
-        "feedUrl": "https://techcrunch.com/category/artificial-intelligence/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
+        "url": "https://en.wellhope-ag.com/news/hfxw9ec/",
+        "parseMode": "html",
+        "itemSelector": "ul.xypg-news-list > li",
+        "linkSelector": "a[href^=\"https://en.wellhope-ag.com/news/\"][href$=\".html\"]",
+        "titleSelector": ".tit > h3",
+        "publishedAtSelector": ".tit > .date",
+        "publishedAtUtcOffset": "+08:00",
+        "allowUrlPrefixes": ["https://en.wellhope-ag.com/news/"],
+        "publisherRole": "organization",
+        "_aihot": { "initialBackfillLimit": 3 },
+        "ingestNoiseFilter": {
+          "dropMarkersTitleOnly": ["fortune china 500", "consumer name brand list", "showcases at", "conference", "meeting", "seminar", "northeast asia forum", "elected president", "military parade", "gilt breeding", "pig industry", "swine feed", "egg products", "feed processing technology"],
+          "keepIfMatches": ["broiler exports", "chicken exports", "poultry exports", "broiler integration project", "poultry capacity", "chicken capacity", "slaughter"]
         }
       },
-      "tier": "T2",
+      "tier": "T1_5",
       "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 60,
-      "tags": [
-        "媒体"
-      ],
+      "interval_minutes": 360,
+      "enabled": true,
+      "tags": [],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-ars-technica-ai",
-      "name": "Ars Technica · AI",
-      "kind": "rss",
+      "id": "mhlw-import-watch",
+      "name": "日本 MHLW 进口食品监管",
+      "kind": "web_list",
       "config": {
-        "feedUrl": "https://arstechnica.com/ai/feed/",
-        "_aihot": {
-          "initialBackfillLimit": 8
-        }
+        "url": "https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/shokuhin/yunyu_kanshi/",
+        "parseMode": "html",
+        "itemSelector": ".m-listNews > li",
+        "linkSelector": "a",
+        "titleSelector": ".m-listNews__txt span",
+        "publishedAtSelector": "time",
+        "publishedAtUtcOffset": "+09:00",
+        "allowUrlPrefixes": ["https://www.mhlw.go.jp/stf/newpage_"],
+        "publisherRole": "organization",
+        "_aihot": { "initialBackfillLimit": 3 }
       },
-      "tier": "T2",
-      "owner_entity_id": null,
+      "tier": "T1",
+      "owner_entity_id": "mhlw",
       "participation_mode": "editorial",
-      "interval_minutes": 60,
-      "tags": [
-        "媒体"
-      ],
+      "interval_minutes": 360,
+      "enabled": true,
+      "tags": [],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-mit-tech-review-ai",
-      "name": "MIT Technology Review · AI",
+      "id": "maff-press",
+      "name": "日本 MAFF 公告",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://www.technologyreview.com/topic/artificial-intelligence/feed",
+        "feedUrl": "https://www.maff.go.jp/j/press/rss.xml",
         "_aihot": {
-          "initialBackfillLimit": 8
-        }
+          "initialBackfillLimit": 3
+        },
+        "ingestNoiseFilter": {
+          "dropMarkersTitleOnly": [
+            "recipe",
+            "recipes",
+            "receita",
+            "receitas",
+            "菜谱",
+            "食谱",
+            "家庭烹饪",
+            "ダイエット",
+            "レシピ"
+          ],
+          "keepIfMatches": [
+            "import",
+            "export",
+            "procurement",
+            "tender",
+            "poultry",
+            "halal",
+            "进口",
+            "出口",
+            "采购",
+            "准入",
+            "鶏肉",
+            "輸入",
+            "輸出",
+            "carne de frango"
+          ]
+        },
+        "publisherRole": "organization"
       },
-      "tier": "T2",
-      "owner_entity_id": null,
+      "tier": "T1",
+      "owner_entity_id": "maff",
       "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "媒体"
-      ],
+      "interval_minutes": 360,
+      "enabled": true,
+      "tags": [],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-the-decoder",
-      "name": "The Decoder",
+      "id": "abpa-news",
+      "name": "巴西 ABPA 公告",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://the-decoder.com/feed/",
+        "feedUrl": "https://abpa-br.org/feed/",
         "_aihot": {
-          "initialBackfillLimit": 8
-        }
+          "initialBackfillLimit": 3
+        },
+        "ingestNoiseFilter": {
+          "dropMarkersTitleOnly": [
+            "recipe",
+            "recipes",
+            "receita",
+            "receitas",
+            "菜谱",
+            "食谱",
+            "家庭烹饪",
+            "ダイエット",
+            "レシピ"
+          ],
+          "keepIfMatches": [
+            "import",
+            "export",
+            "procurement",
+            "tender",
+            "poultry",
+            "halal",
+            "进口",
+            "出口",
+            "采购",
+            "准入",
+            "鶏肉",
+            "輸入",
+            "輸出",
+            "carne de frango"
+          ]
+        },
+        "publisherRole": "organization"
       },
-      "tier": "T2",
-      "owner_entity_id": null,
+      "tier": "T1_5",
+      "owner_entity_id": "abpa",
       "participation_mode": "editorial",
-      "interval_minutes": 60,
-      "tags": [
-        "媒体"
-      ],
+      "interval_minutes": 360,
+      "enabled": true,
+      "tags": [],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-simon-willison",
-      "name": "Simon Willison",
-      "kind": "rss",
+      "id": "sfda-news",
+      "name": "沙特 SFDA 公告",
+      "kind": "web_list",
       "config": {
-        "feedUrl": "https://simonwillison.net/atom/everything/",
+        "url": "https://www.sfda.gov.sa/en/news",
+        "parseMode": "html",
+        "itemSelector": ".view-content .news-card",
+        "linkSelector": "a[href^=\"/en/news/\"]",
+        "titleSelector": ".head-subtitle",
+        "publishedAtSelector": ".text-primary span",
+        "publishedAtUtcOffset": "+03:00",
+        "allowUrlPrefixes": [
+          "https://www.sfda.gov.sa/en/news/"
+        ],
+        "publisherRole": "organization",
         "_aihot": {
-          "initialBackfillLimit": 8
+          "initialBackfillLimit": 3
+        },
+        "ingestNoiseFilter": {
+          "dropMarkersTitleOnly": [
+            "breast cancer",
+            "pharmaceutical",
+            "medicine",
+            "drug registration"
+          ],
+          "keepIfMatches": [
+            "food",
+            "poultry",
+            "meat",
+            "import",
+            "halal",
+            "residue",
+            "recall"
+          ]
         }
       },
-      "tier": "T2",
-      "owner_entity_id": null,
+      "tier": "T1",
+      "owner_entity_id": "sfda",
       "participation_mode": "editorial",
-      "interval_minutes": 120,
-      "tags": [
-        "个人"
-      ],
+      "interval_minutes": 360,
+      "enabled": true,
+      "tags": [],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-import-ai",
-      "name": "Import AI",
-      "kind": "rss",
+      "id": "fengxiang-news",
+      "name": "中国凤祥股份新闻",
+      "kind": "web_list",
       "config": {
-        "feedUrl": "https://importai.substack.com/feed",
-        "_aihot": {
-          "initialBackfillLimit": 8
+        "url": "https://www.fengxiang.com/index/news/index.html",
+        "parseMode": "html",
+        "itemSelector": ".newsList .dec",
+        "linkSelector": ".title h2 a",
+        "titleSelector": ".title h2 a",
+        "publishedAtSelector": ".g_date",
+        "publishedAtUtcOffset": "+08:00",
+        "allowUrlPrefixes": ["https://www.fengxiang.com/index/news/details/id/"],
+        "publisherRole": "organization",
+        "_aihot": { "initialBackfillLimit": 3 },
+        "ingestNoiseFilter": {
+          "dropMarkersTitleOnly": ["马拉松", "急救", "AED", "促就业", "跑友", "捐赠", "环境自行监测", "环保信息公示"],
+          "keepIfMatches": ["出口", "进口", "日本", "采购", "合作", "产能", "扩产", "投产", "无疫", "检疫"]
         }
       },
-      "tier": "T2",
-      "owner_entity_id": null,
+      "tier": "T1_5",
+      "owner_entity_id": "fengxiang",
       "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "个人",
-        "周刊"
-      ],
+      "interval_minutes": 360,
+      "enabled": true,
+      "tags": [],
       "site_fulltext": false,
       "syndicate_fulltext": false
     },
     {
-      "id": "rss-latent-space",
-      "name": "Latent Space",
+      "id": "nichirei-foods-news",
+      "name": "日本日冷食品公告",
       "kind": "rss",
       "config": {
-        "feedUrl": "https://www.latent.space/feed",
-        "_aihot": {
-          "initialBackfillLimit": 8
+        "feedUrl": "https://www.nichireifoods.co.jp/news/feed/",
+        "allowUrlPrefixes": ["https://www.nichireifoods.co.jp/news/"],
+        "publisherRole": "organization",
+        "_aihot": { "initialBackfillLimit": 3 },
+        "ingestNoiseFilter": {
+          "dropMarkersTitleOnly": ["WebCM", "TVCM", "キャンペーン", "リカちゃん", "キッザニア", "ガシャポン", "ダンス"],
+          "keepIfMatches": ["価格改定", "価格変更", "供給", "システム障害", "回収", "輸入", "調達", "新工場", "増産"]
         }
       },
-      "tier": "T2",
+      "tier": "T1_5",
       "owner_entity_id": null,
       "participation_mode": "editorial",
-      "interval_minutes": 180,
-      "tags": [
-        "个人"
-      ],
+      "interval_minutes": 360,
+      "enabled": true,
+      "tags": [],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "almarai-news",
+      "name": "沙特 Almarai 公告",
+      "kind": "web_list",
+      "config": {
+        "url": "https://www.almarai.com/en/corporate/media-center/almarai-news",
+        "parseMode": "html",
+        "itemSelector": ".storiesWrapper, .blocItem",
+        "linkSelector": "a.btn-cta",
+        "titleSelector": "h4",
+        "publishedAtUtcOffset": "+03:00",
+        "allowUrlPrefixes": ["https://www.almarai.com/en/corporate/media-center/almarai-news/"],
+        "detail": {
+          "maxFetches": 3,
+          "publishedAtSelector": "meta[property=\"article:published_time\"]",
+          "publishedAtAuthoritative": true
+        },
+        "publisherRole": "organization",
+        "_aihot": { "initialBackfillLimit": 3 },
+        "ingestNoiseFilter": {
+          "dropMarkersTitleOnly": ["talent development", "valuable brands", "sukuk deal", "espen", "breast cancer"],
+          "keepIfMatches": ["poultry", "chicken", "foodservice", "supply", "capacity", "investment", "growth strategy", "growth plan"]
+        }
+      },
+      "tier": "T1_5",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 360,
+      "enabled": true,
+      "tags": [],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "mewa-news",
+      "name": "沙特 MEWA 官方新闻",
+      "kind": "web_list",
+      "config": {
+        "url": "https://www.mewa.gov.sa/en/MediaCenter/News/Pages/home.aspx",
+        "parseMode": "html",
+        "itemSelector": ".card",
+        "linkSelector": ".content > a.btn.btn-primary.mt-auto",
+        "titleSelector": "h2.card-title.card-link",
+        "publishedAtSelector": ".tag.tag-neutral.tag-mediume",
+        "publishedAtUtcOffset": "+03:00",
+        "allowUrlPrefixes": ["https://www.mewa.gov.sa/en/MediaCenter/News/Pages/"],
+        "publisherRole": "organization",
+        "_aihot": { "initialBackfillLimit": 3 },
+        "ingestNoiseFilter": {
+          "dropMarkersTitleOnly": ["environmental", "water council", "water efforts", "water forum", "royal address", "Namya Startup", "inspection visits", "quality, sustainability and innovation"],
+          "keepIfMatches": ["poultry", "chicken", "meat import", "meat export", "slaughter"]
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 360,
+      "enabled": true,
+      "tags": [],
       "site_fulltext": false,
       "syndicate_fulltext": false
     }

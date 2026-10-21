@@ -1,0 +1,509 @@
+{
+  "$comment": "Discovery and status registry only; scripts/seed.ts never reads this file. Only parser-verified entries in sources.json are seeded.",
+  "candidates": [
+    {
+      "id": "gacc-statistics",
+      "name": "中国海关统计",
+      "market": "中国",
+      "discoveryUrl": "https://stats.customs.gov.cn/",
+      "route": "ETL／dataset",
+      "status": "2026-10-20 仍待提取中国官方禽肉月度细目；ALIC中国分析可核对冷冻鸡肉与调制品全国出口，两者分列。贸易数据保留资料路由，见docs/SOURCE_QUALITY_REVIEW_20261020.md"
+    },
+    {
+      "id": "gacc-food",
+      "name": "海关食品／检疫",
+      "market": "中国",
+      "discoveryUrl": "https://www.customs.gov.cn/",
+      "route": "crawler 公告／名单 diff",
+      "status": "2026-10-12 主站连接失败，未接入；统计／名单仍分开处理"
+    },
+    {
+      "id": "mara",
+      "name": "农业农村部",
+      "market": "中国",
+      "discoveryUrl": "https://www.moa.gov.cn/",
+      "route": "crawler 公告",
+      "status": "2026-10-12 主站与 jhs 子站被保留地址校验拒绝，未放宽网络安全规则"
+    },
+    {
+      "id": "china-company",
+      "name": "中国重点同行公告",
+      "market": "中国",
+      "discoveryUrl": "https://www.fengxiang.com/index/news/index.html",
+      "route": "官网／上市公告",
+      "status": "2026-10-12 凤祥已配置为 fengxiang-news，禾丰英文官网已配置为 wellhope-news；圣农连接失败，仙坛列表未通过；禾丰已核对肉鸡出口马来西亚审批中的具体动作，不当已获批或已成交"
+    },
+    {
+      "id": "aqs",
+      "name": "日本 AQS",
+      "market": "日本",
+      "discoveryUrl": "https://www.maff.go.jp/aqs/",
+      "route": "公告 crawler＋Excel ETL",
+      "status": "2026-10-12 首页／禽流感汇总页可读；多条事件共用 URL、首页日期缺年，普通新闻源会混淆身份，保留快照／diff 路由"
+    },
+    {
+      "id": "mhlw",
+      "name": "日本 MHLW",
+      "market": "日本",
+      "discoveryUrl": "https://www.mhlw.go.jp/",
+      "route": "网页公告／名单 diff",
+      "status": "2026-10-12 进口食品监管 HTML 列表／日期／正文及使用规则已验，配置为 mhlw-import-watch；RSS 仍禁用，食品总体统计不能当禽肉统计"
+    },
+    {
+      "id": "japan-trade",
+      "name": "日本贸易统计",
+      "market": "日本",
+      "discoveryUrl": "https://www.customs.go.jp/toukei/info/",
+      "route": "structured dataset",
+      "status": "2026-10-20 官方目录与2026年8月PDF发布资料已核对，正确路径/toukei/shinbun/trade-st/2026/2026085.pdf项目读取200；原料肉/调制品和中国原产国别细目尚未提取，数据资料路线待接入"
+    },
+    {
+      "id": "saudi-show",
+      "name": "Saudi Food Show",
+      "market": "沙特阿拉伯",
+      "discoveryUrl": "https://www.thesaudifoodshow.com/",
+      "route": "展商池 crawler",
+      "status": "V2，参展不等于买家"
+    },
+    {
+      "id": "moccae",
+      "name": "UAE MOCCAE",
+      "market": "阿联酋",
+      "discoveryUrl": "https://www.moccae.gov.ae/en/media-center/news-and-media",
+      "route": "准入名单 diff／公告",
+      "status": "2026-10-12 找到新闻列表；版权页明示未经授权的使用／复制受限，未启用，名单另走快照 diff"
+    },
+    {
+      "id": "gulfood",
+      "name": "Gulfood",
+      "market": "阿联酋",
+      "discoveryUrl": "https://www.gulfood.com/",
+      "route": "展商池 crawler",
+      "status": "V2"
+    },
+    {
+      "id": "govs",
+      "name": "Egypt GOVS",
+      "market": "埃及",
+      "discoveryUrl": null,
+      "route": "公告 crawler／名单",
+      "status": "官方有效入口待核实"
+    },
+    {
+      "id": "food-africa",
+      "name": "Food Africa",
+      "market": "埃及",
+      "discoveryUrl": "https://foodafrica-expo.com/",
+      "route": "展商池 crawler",
+      "status": "V2"
+    },
+    {
+      "id": "mapa",
+      "name": "巴西 MAPA",
+      "market": "巴西",
+      "discoveryUrl": "https://www.gov.br/agricultura/pt-br",
+      "route": "公告＋准入 API／名单",
+      "status": "猜测的 noticias/RSS 返回 404，不启用"
+    },
+    {
+      "id": "tbpea",
+      "name": "TBPEA",
+      "market": "泰国",
+      "discoveryUrl": null,
+      "route": "企业名录／公告",
+      "status": "官方域名与入口待核实"
+    },
+    {
+      "id": "dld",
+      "name": "Thai DLD",
+      "market": "泰国",
+      "discoveryUrl": "https://dld.go.th/",
+      "route": "公告 crawler",
+      "status": "待列表／详情验证"
+    },
+    {
+      "id": "wahis",
+      "name": "WOAH WAHIS",
+      "market": "全球",
+      "discoveryUrl": "https://wahis.woah.org/",
+      "route": "事件 API／dataset → 派生情报",
+      "status": "待接入，疫情不当禁运"
+    },
+    {
+      "id": "eping",
+      "name": "WTO ePing",
+      "market": "全球",
+      "discoveryUrl": "https://epingalert.org/",
+      "route": "SPS 通知 API → 派生情报",
+      "status": "待接入，保留草案阶段"
+    },
+    {
+      "id": "nichirei-foods",
+      "name": "日本日冷食品",
+      "market": "日本",
+      "discoveryUrl": "https://www.nichireifoods.co.jp/news/feed/",
+      "route": "官方 RSS／独立新闻页",
+      "status": "2026-10-12 已配置为 nichirei-foods-news；第7报子站页实际空正文，未见 PDF 链接，集团同标题 HTML 已另行核对；自动正文替代未实现，不作全文再分发"
+    },
+    {
+      "id": "almarai",
+      "name": "Almarai",
+      "market": "沙特阿拉伯",
+      "discoveryUrl": "https://www.almarai.com/en/corporate/media-center/almarai-news",
+      "route": "官网新闻 HTML＋详情发布时间元数据",
+      "status": "2026-10-12 已配置为 almarai-news；公司供给／渠道动作源，不代表进口商采购或食品进口执法"
+    },
+    {
+      "id": "tanmiah",
+      "name": "Tanmiah Food Company",
+      "market": "沙特阿拉伯",
+      "discoveryUrl": "https://tanmiah.com/press_release/index.php",
+      "route": "新闻稿，待取得适用许可",
+      "status": "2026-10-12 列表与正文可读，但 terms.php 明示禁止 robot／spider 等自动访问；不启用"
+    },
+    {
+      "id": "jetro-foods",
+      "name": "JETRO 食品贸易短信",
+      "market": "日本／全球",
+      "discoveryUrl": "https://www.jetro.go.jp/biznewstop/foods/import/biznews/",
+      "route": "网页，待取得适用许可",
+      "status": "2026-10-12 入口可读，但官方 FAQ 要求内容加工／定期标题刊载事先许可；不启用"
+    },
+    {
+      "id": "cpf-news",
+      "name": "CP Foods 公司新闻",
+      "market": "泰国",
+      "discoveryUrl": "https://www.cpfworldwide.com/en/media-center/list/corporate",
+      "route": "公司公告，待核对使用条件与日期",
+      "status": "2026-10-12 入口可读，条款限制未经许可的公开传播；列表另出现晚于检查日期的日期，不启用"
+    },
+    {
+      "id": "jmta",
+      "name": "日本食肉输出入协会",
+      "market": "日本",
+      "discoveryUrl": "https://www.jm-ta.jp/whatsnew.html",
+      "route": "统计网页快照／dataset",
+      "status": "2026-10-20 项目读取200；9月29日表披露8月鸡肉进口50437吨，与ALIC需给表一致。最新公告复用列表URL，按月份保留快照；普通新闻接入仍待身份方案，先作月度参考"
+    },
+    {
+      "id": "dubai-municipality",
+      "name": "迪拜市政府食品监管",
+      "market": "阿联酋",
+      "discoveryUrl": "https://www.dm.gov.ae/media-center/spotlight/",
+      "route": "官方 HTML 公告；稳定列表待核对",
+      "status": "2026-10-12 两篇食品检查／进口监管公告原文及日期已核对；feed 路径返回首页 HTML，列表实际只解析到一条招聘新闻，未作为自动源启用"
+    },
+    {
+      "id": "nipponham-import-business",
+      "name": "日本哈姆食肉业务",
+      "market": "日本",
+      "discoveryUrl": "https://www.nipponham.co.jp/corporate/group/business/meats/",
+      "route": "进口商角色出处＋有日期的业务公告",
+      "status": "2026-10-12 官方页面确认进口食肉及商社功能；缺少具体采购／供应商变更公告，不把公司简介变成买家需求，未启用"
+    },
+    {
+      "id": "foodlink-import-business",
+      "name": "Foodlink",
+      "market": "日本",
+      "discoveryUrl": "https://www.foodlink.co.jp/business/products/freshmeats/",
+      "route": "进口鸡肉角色出处＋有日期的业务公告",
+      "status": "2026-10-12 官方产品页明确经营国产及进口鸡肉；新闻当前多为人事／公益／网站更新，未发现可用采购动作，不自动启用、不补联系方式"
+    },
+    {
+      "id": "wellhope-company-news",
+      "name": "禾丰食品英文官网",
+      "market": "中国／出口市场",
+      "discoveryUrl": "https://en.wellhope-ag.com/news/hfxw9ec/",
+      "route": "web_list → wellhope-news",
+      "status": "2026-10-12 已配置；真实20条日期完整，去噪保留3条，首轮12个月回填实际2条日期／正文齐全，复抓新增／修订0；robots全站Allow，仅摘要和链接，未获全文或图片再发布许可"
+    },
+    {
+      "id": "tsuchiya-foopo",
+      "name": "土屋商店 FOOPO 企业发布",
+      "market": "日本／巴西",
+      "discoveryUrl": "https://prtimes.jp/main/html/rd/p/000000005.000182229.html",
+      "route": "企业自述的采购渠道动作；RSS许可范围待确认",
+      "status": "2026-10-12 2026-05-18企业新闻稿确认巴西鸡腿肉共同直进口机制，达到整柜才发单，未证实已成交或到货；专属RSS仅1条，条目dc:date与页面09:30一致、与Readability日期相差1小时，采样采用RSS条目时间；平台一般／报道用途范围需确认，暂不启用自动源，不与转载页重复计事件"
+    },
+    {
+      "id": "sfda-circulars",
+      "name": "沙特 SFDA 决定与通知",
+      "market": "沙特阿拉伯",
+      "discoveryUrl": "https://www.sfda.gov.sa/ar/circulars",
+      "route": "独立通知列表；使用条件待解决",
+      "status": "2026-10-20 阿文详情原文取得成功；19471、19742页面通告状态为非有效，19742决定状态为解除而正文为禁令，当前有效状态待复核。现有sfda-news只覆盖/en/news/。门户条款的部门用途/链接展示范围仍待确认，保持候选"
+    },
+    {
+      "id": "alic-poultry-analysis",
+      "name": "日本农畜产业振兴机构禽肉分析",
+      "market": "日本／中国／竞争供给",
+      "discoveryUrl": "https://www.alic.go.jp/joho-c/joho05_004417.html",
+      "route": "有期号的分析；具体发布日期与列表入口待确认",
+      "status": "2026-10-20 重核已知2026年10月号：上半年中国冷冻鸡肉出口40.1788万吨、调制品23.6189万吨，均为全国出口。只有期号精度，作为月度参考；普通日级新闻流仍待日期依据。数值标出处，保留原始资料"
+    },
+    {
+      "id": "egypt-msit-poultry",
+      "name": "埃及供给与国内贸易部禽肉公告",
+      "market": "埃及",
+      "discoveryUrl": "https://www.msit.gov.eg/?p=7169",
+      "route": "官方进口／供给公告；网络与列表待验",
+      "status": "2026-10-12 官方搜索结果显示2026-02-08冷冻禽肉进口三方安排，直接页面、栏目、robots读取超时；未获得可稳定读取的完整原文或使用条件，不当已采集或已接入。SIS 2026-02-09降价公告是另一动作，不能据此补造进口量、供应商或成交"
+    },
+    {
+      "id": "egypt-gasc-poultry-contracts",
+      "name": "埃及 GASC 冷冻禽肉与肉类合同",
+      "market": "埃及",
+      "discoveryUrl": "https://www.gasc.gov.eg/tenders/frozen-poultry-and-meat-contracts/en",
+      "route": "招标／合同入口；条目待验证",
+      "status": "2026-10-12 官方栏目可打开但仅栏目标题，无有日期的采购条目；不当真实需求，不启用"
+    },
+    {
+      "id": "poultrytimes-media",
+      "name": "Poultry Times",
+      "market": "国际禽肉行业／美国为主",
+      "discoveryUrl": "https://www.poultrytimes.com/feed/",
+      "route": "rss → poultrytimes-news，T2行业媒体",
+      "status": "2026-10-12 原站首页明确提供原生RSS，10条URL唯一／日期全齐，去噪后4条；隔离首次3条正文／日期齐全，复抓新增／修订0。赞助内容排除，署名／引用机构保留，不当官方源；robots仅禁止wp-admin。版权及Visitor Agreement未形成全文／持续共享许可证明，全文再发布关闭，生产运行与共享仍待确认"
+    },
+    {
+      "id": "meatpoultry-media",
+      "name": "MEAT+POULTRY",
+      "market": "国际肉类贸易／美国为主",
+      "discoveryUrl": "https://www.meatpoultry.com/rss",
+      "route": "媒体RSS候选，自动访问限制",
+      "status": "2026-10-12 官方RSS说明及具体对华禽肉出口报道可读；项目读取器RSS页403。terms-of-use第3节及第8节明确限制自动／非人工抓取和数据挖掘，RSS例外未明确，不接入、不绕过挑战页"
+    },
+    {
+      "id": "thepoultrysite-media",
+      "name": "The Poultry Site / Global Ag Media",
+      "market": "全球禽肉",
+      "discoveryUrl": "https://www.thepoultrysite.com/markets-policy-2/imports-and-exports",
+      "route": "媒体贸易栏目，使用范围待解决",
+      "status": "2026-10-12 新闻列表与具体进口／供给报道可读，署名Global Ag Media、引用官方／CoBank等出处；terms第5条限个人用途及再使用书面许可，不启用自动源，不把媒体解读当官方决定或已成交订单"
+    },
+    {
+      "id": "poultryworld-media",
+      "name": "Poultry World",
+      "market": "全球禽肉",
+      "discoveryUrl": "https://www.poultryworld.net/",
+      "route": "媒体迁移入口待复验",
+      "status": "2026-10-12 主站重定向到foodagribusiness.world/poultry，旧/feed/重定向后404；日期、正文、权限与新RSS未完成验证，不按旧URL接入"
+    },
+    {
+      "id": "chinatradenews-media",
+      "name": "中国贸易报",
+      "market": "中国出口贸易",
+      "discoveryUrl": "https://www.chinatradenews.com.cn/epaper/content/2026-09/03/content_97426.htm",
+      "route": "中文贸易报道；稳定列表与网络待验",
+      "status": "2026-10-12 2026-09-03鸡肉净出口分析有日期和完整原文，明确引用中国贸促会农业行业分会；网页工具可读，项目安全读取器被保留／私有地址规则拒绝。不绕过网络防护，未完成稳定列表和版权范围核对，暂不接入"
+    },
+    {
+      "id": "alic-domestic-chicken-statistics",
+      "name": "ALIC 日本鸡肉需给与进口统计",
+      "market": "日本",
+      "discoveryUrl": "https://www.alic.go.jp/joho-c/joho05_000073.html",
+      "route": "月度参考／PDF及Excel资料；V1不新增ETL或schema",
+      "status": "2026-10-20 目录与4010a.pdf取得200，8月进口50437吨；目录10月9日为表更新日。列出原料肉/调制品国别Excel，细目尚未提取；共享URL更新身份与正文方式待评审"
+    },
+    {
+      "id": "nichirei-group-ir",
+      "name": "日冷集团经营说明",
+      "market": "日本／泰国竞争供给",
+      "discoveryUrl": "https://www.nichirei.co.jp/ir/library/brief.html",
+      "route": "发行人IR PDF，渠道经营参考",
+      "status": "2026-10-20 目录含260807kettsan.pdf，原文件项目读取200；正文说明大客户鸡肉加工品增长及泰国出口经营影响。国内4-6月/海外1-6月分列，具体采购量未披露；PDF正文接入待评审"
+    },
+    {
+      "id": "mewa-poultry-policy",
+      "name": "沙特 MEWA 禽肉政策与供给",
+      "market": "沙特阿拉伯",
+      "discoveryUrl": "https://www.mewa.gov.sa/en/MediaCenter/News/Pages/home.aspx",
+      "route": "web_list 已配置 mewa-news，限量隔离接入",
+      "status": "2026-10-20 正式配置第10源，T1/360分钟/首次最多3条，全文再分发关闭。真实列表12条去噪后3条，隔离库首轮3条日期及正文齐全，复抓新增/修订0，业务模型请求0；10月6日进口许可管理措施的办理生效日待核。robots未限制新闻路径，条款要求复制/再发布取得授权，部门共享适用范围待确认"
+    },
+    {
+      "id": "china-company-disclosures",
+      "name": "中国禽肉同行经营披露",
+      "market": "中国",
+      "discoveryUrl": "https://www.cninfo.com.cn/new/index?lang=zh",
+      "route": "发行人／交易所月度简报与定期报告",
+      "status": "2026-10-20 仙坛半年报交易所原件已读，调理品销量及产能释放明确；圣农半年报和仙坛9月简报从媒体托管发行人PDF副本核对，正式来源优先原件。项目读取.cn地址拒绝，PDF正文流程待验证"
+    },
+    {
+      "id": "cargill-poultry-primary",
+      "name": "嘉吉禽肉投资原始新闻稿",
+      "market": "泰国／菲律宾／日本竞争供给",
+      "discoveryUrl": "https://www.cargill.com/news/press-releases",
+      "route": "企业原稿人工参考",
+      "status": "2026-10-20 9月28日原稿可由网页工具读到，同t01-holdout-006事件补一手出处；项目文章及列表403，条款明确限制robots/data-mining，保持人工参考"
+    },
+    {
+      "id": "comtrade",
+      "name": "UN Comtrade",
+      "market": "全球",
+      "discoveryUrl": "https://comtradeplus.un.org/",
+      "route": "API → structured dataset",
+      "status": "V2 数据任务，V1 不当普通新闻"
+    },
+    {
+      "id": "cccfna-poultry",
+      "name": "中国食品土畜进出口商会／禽肉进出口分会",
+      "market": "中国",
+      "discoveryUrl": "https://www.cccfna.org.cn/hangyuefenhui/qinrou/qinroujianjie/ff8080819e6998d6019ea5f9b7870ae1.html",
+      "route": "优先：贸易统计／政策栏目及公众号核验",
+      "status": "2026-10-20 商会官网及禽肉分会主体已核，10月19日出口概况含鸡/鸭肉金额；官网展示商会微信公众号，分会独立号和原始ID待核。产品简报含肉类合计，范围分列；未配置自动源"
+    },
+    {
+      "id": "china-meat-association",
+      "name": "中国肉类协会／中肉协公众号",
+      "market": "中国",
+      "discoveryUrl": "https://www.chinameat.net/",
+      "route": "优先审阅：贸易／禽业栏目及公众号",
+      "status": "2026-10-20 官网展示中肉协公众号；近期已核样本偏会议与活动，对华出口栏目夹机构链接，按贸易和经营内容复核，原始ID待核；未配置自动源"
+    },
+    {
+      "id": "caaa-poultry-market",
+      "name": "中国畜牧业协会肉禽分会／禽类行情",
+      "market": "中国",
+      "discoveryUrl": "https://org.caaa.cn/html/fw/market/qin/index.html",
+      "route": "优先审阅：肉禽行情／供需及账号核验",
+      "status": "2026-10-20 官网禽类栏目可核10月15日卓创/Mysteel标题日期及详情链接，详情读取超时；协会分会账号名和ID待核。按原提供方去重，未配置自动源"
+    },
+    {
+      "id": "boyar-poultry",
+      "name": "博亚和讯肉禽行情与分析",
+      "market": "中国",
+      "discoveryUrl": "https://www.boyar.cn/",
+      "route": "优先：肉鸡价格／屠宰／供需，公众号待核",
+      "status": "2026-10-20 10月20日白羽肉毛鸡价格表正文已核，元/斤及地区口径保留；当日屠宰/分割品标题可见、正文待核，准确公众号名和ID未知。商业报告与公开内容分列；未配置自动源"
+    },
+    {
+      "id": "international-livestock-wechat",
+      "name": "国际畜牧网公众号线索",
+      "market": "中国",
+      "discoveryUrl": null,
+      "route": "重点补核：微信原号／贸易原稿",
+      "status": "2026-10-20 券商报告与转载明确提及同名公众号；鸡病专业网可核其禽企销售和对华贸易转载样例，原号主体/ID、原稿及可用官网待核，未配置自动源"
+    },
+    {
+      "id": "foodmate-meat-channels",
+      "name": "食品伙伴网／肉制品联盟等账号",
+      "market": "中国",
+      "discoveryUrl": "https://vip.foodmate.net/about.html",
+      "route": "专题补充：肉类加工／食品进出口监管",
+      "status": "2026-10-20 官网证实公众号矩阵，官方历史矩阵列肉制品联盟/国际食品，2026年9月17日网站有肉制品联盟署名专题。原始ID及近期微信正文待核，区分法规解读与培训推广；未配置自动源"
+    },
+    {
+      "id": "sci-poultry-market",
+      "name": "卓创资讯肉禽行情",
+      "market": "中国",
+      "discoveryUrl": "https://www.sci99.com/",
+      "route": "行情补充：公开样文／商业许可核验",
+      "status": "2026-10-20 协会禽类行情栏目列其白羽肉鸡价格产品，原始发布页、禽业账号名/ID及数据使用范围待核，未配置自动源"
+    },
+    {
+      "id": "jbzyw-poultry",
+      "name": "鸡病专业网禽肉行业线索",
+      "market": "中国",
+      "discoveryUrl": "https://www.jbzyw.com/",
+      "route": "线索补充：贸易／行情文章追原稿",
+      "status": "2026-10-20 可核8月28日鸡肉贸易分析等转载，原稿含现代畜牧网/国际畜牧网，账号归属和ID待核；技术/动保/蛋类/推广较多，逐篇筛选，未配置自动源"
+    },
+    {
+      "id": "china-poultry-guide",
+      "name": "中国禽业导刊账号线索",
+      "market": "中国",
+      "discoveryUrl": null,
+      "route": "待核：官方账号／肉鸡业务样刊",
+      "status": "2026-10-20 第三方期刊目录及转载可见同名渠道，所核样例偏蛋鸡与生产技术，官方号主体/ID及肉鸡贸易原文待核，未配置自动源"
+    },
+    {
+      "id": "shandong-meat-association",
+      "name": "山东省肉类协会账号线索",
+      "market": "中国",
+      "discoveryUrl": null,
+      "route": "探索：主体与官网／公众号关联",
+      "status": "2026-10-20 第三方7月6日行业活动报道提及协会及山东肉类加工，未确认自有官网或公众号，不与山东省畜牧总站合并；未配置自动源"
+    },
+    {
+      "id": "oig-meat-trade",
+      "name": "优合集团／优顶特研究院",
+      "market": "中国／肉类进出口",
+      "discoveryUrl": "https://www.oigcn.com/",
+      "route": "优先取样：肉类准入／国别供给与研究院公众号",
+      "status": "2026-10-20 5条主样+1历史补充，确认近期2条，禽肉准入/解禁内容贴合，材料主要从署名转载取得，原号原稿未核；优先补公众号身份与近期原文。 详见docs/MEAT_TRADE_SAMPLE_REVIEW_20261020.md；未新增正式源。"
+    },
+    {
+      "id": "frozen-market-wechat",
+      "name": "冻品行情公众号线索",
+      "market": "中国／肉类进出口",
+      "discoveryUrl": null,
+      "route": "优先取样：进口肉价／市场走货／禽肉行情",
+      "status": "2026-10-20 5条近期索引样例，实际读取玉湖转载页5/5 HTTP200但正文均与标题不符；当前入口暂不自动接入，换微信原文核对。目录微信号线索不作已核账号。 详见docs/MEAT_TRADE_SAMPLE_REVIEW_20261020.md；未新增正式源。"
+    },
+    {
+      "id": "btc-imported-beef",
+      "name": "必孚（中国）／BTC",
+      "market": "中国／肉类进出口",
+      "discoveryUrl": "https://www.beeftochina.com.cn/cn/Homepage",
+      "route": "优先取样：进口牛肉国别／工厂／行情及公众号",
+      "status": "2026-10-20 5条不同主题主样，确认近期0；年度报告第三方日期2月2/11冲突，其他为较旧报道，牛肉专题保留、接入后移，补近期原稿及账号，未推断停更。 详见docs/MEAT_TRADE_SAMPLE_REVIEW_20261020.md；未新增正式源。"
+    },
+    {
+      "id": "cciinet-frozen-trade",
+      "name": "冻品e港资讯",
+      "market": "中国／肉类进出口",
+      "discoveryUrl": "https://www.cciinet.com/shop/circle/",
+      "route": "优先取样：公开肉贸资讯／周报及公众号",
+      "status": "2026-10-20 5条近期主样，2篇免费贸易正文匹配（署领鲜云冻品），3篇付费周报仅目录/摘要；首批只对免费资讯验证限量接入，保留转载稿源，账号原始ID待核。 详见docs/MEAT_TRADE_SAMPLE_REVIEW_20261020.md；未新增正式源。"
+    },
+    {
+      "id": "mysteel-meat-trade",
+      "name": "Mysteel农产品肉类贸易与行情",
+      "market": "中国／肉类进出口",
+      "discoveryUrl": "https://ncp.mysteel.com/a/26082515/590CD3971037E8D4.html",
+      "route": "优先取样：禽肉进出口／肉类价格与数据",
+      "status": "2026-10-20 5条近期禽肉主样：2篇主要正文、2部分、1仅元数据；5个目标实读200，原始HTML有登录提示。6月分析最大品项叙述内部矛盾已记录；优先补原始数据、内容使用与获取路线，公众号原始ID待核。 详见docs/MEAT_TRADE_SAMPLE_REVIEW_20261020.md；未新增正式源。"
+    },
+    {
+      "id": "lingxian-frozen-content",
+      "name": "领鲜云冻品内容线索",
+      "market": "中国／肉类进出口",
+      "discoveryUrl": null,
+      "route": "补核原稿：进口肉贸分析／来源身份",
+      "status": "2026-10-20 冻品e港9月30日与玉湖站8月10日原文均标为内容来源；运营主体、官网及准确公众号未核，不推定与飞熊领鲜存在隶属关系。 详见docs/MEAT_TRADE_SOURCES_20261020.md；未新增正式采集。"
+    },
+    {
+      "id": "yuhu-frozen-news",
+      "name": "玉湖冻品资讯站／玉湖福谷",
+      "market": "中国／肉类进出口",
+      "discoveryUrl": "https://www.frozengoods.com.hk/zh-CN/news/6589?cate=126&child=0",
+      "route": "补充：进口肉贸及行情转载",
+      "status": "2026-10-20 新5条目标页HTTP200但标题/抽取正文均错配，3条抽取到同一规划问答；已保存HTML及正文证据列入T06，暂不按普通文章采集。此前可读样例作为历史证据保留。 详见docs/MEAT_TRADE_SAMPLE_REVIEW_20261020.md；未新增正式源。"
+    },
+    {
+      "id": "roujiaosuo-trade",
+      "name": "肉交所肉贸资讯",
+      "market": "中国／肉类进出口",
+      "discoveryUrl": "https://www.roujiaosuo.com/about/27.html",
+      "route": "补充：交易平台资讯／供求线索",
+      "status": "2026-10-20 官网公司介绍自述网金（北京）科技有限公司旗下撮合平台，贸易稿中有冻品行情署名。准确账号及关联关系待核，用户报盘与实际成交分列。 详见docs/MEAT_TRADE_SOURCES_20261020.md；未新增正式采集。"
+    },
+    {
+      "id": "linkingfresh-company",
+      "name": "飞熊领鲜企业内容与公众号",
+      "market": "中国／肉类进出口",
+      "discoveryUrl": "https://www.linkingfresh.com/",
+      "route": "备用：进口供应链企业实质动作",
+      "status": "2026-10-20 官网及公众号入口可见，公开样例有2025年中巴肉贸采访和较旧供应链稿；近期持续资讯待核，按企业宣传/合作动作评估，账号原始ID未知。 详见docs/MEAT_TRADE_SOURCES_20261020.md；未新增正式采集。"
+    },
+    {
+      "id": "yumtown-mrmeat",
+      "name": "九雅堂／肉管家公众号",
+      "market": "中国／肉类进出口",
+      "discoveryUrl": "https://www.yumtown.cn/",
+      "route": "备用：进口商经营／准入整理",
+      "status": "2026-10-20 官网明确公司主体及九雅堂、肉管家两个公众号，覆盖牛猪鸡火鸡。样例偏产品/展会/服务与2025准入整理；原始ID及近期贸易原文待核，同主体两账号不重复算机构。 详见docs/MEAT_TRADE_SOURCES_20261020.md；未新增正式采集。"
+    }
+  ]
+}
