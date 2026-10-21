@@ -27,6 +27,10 @@ import {
 import { CATEGORY_GUIDE, CATEGORY_TAGS, ENTITIES, ENTITY_TAGS, ITEM_TYPES, normalizeTags, TOPIC_TAGS } from "./vocabulary.ts";
 import { promptText, promptVersion } from "./prompts.ts";
 import { originalPostCopy } from "../content/posts.ts";
+import { ScoreSchema, evaluateScore, type ScoreJudgment } from "./scoring.ts";
+import { groundStructure, groundCopy, type GroundingCheck } from "./grounding.ts";
+
+export { ScoreSchema } from "./scoring.ts";
 
 export { buildMaterial, loadAnalyzeInput, type AnalyzeInputArticle };
 
@@ -39,7 +43,7 @@ export const PROMPT_VERSIONS = {
 } as const;
 /** Every step's prompt, as stored on each judgement. */
 export const SELECTION_PROMPT_VERSION = [PROMPT_VERSIONS.prefilter, PROMPT_VERSIONS.score].join("+");
-export const ANALYZE_PROMPT_VERSION = Object.values(PROMPT_VERSIONS).join("+");
+export const ANALYZE_PROMPT_VERSION = [...Object.values(PROMPT_VERSIONS), "scoring@1", "grounding@1"].join("+");
 
 // Scoring
 
@@ -69,8 +73,6 @@ const scoreCall = (model: string) => SCORE_CALL[model] ?? { temperature: 0.2, ma
 /** The score prompt: the industry's taste (industry/prompts/selection-score.md). */
 export const SCORE_SYSTEM = promptText("selection-score");
 
-export const ScoreSchema = z.object({ attentionScore: z.coerce.number().int().min(0).max(100) });
-
 const SCORE_TIME = new Intl.DateTimeFormat("sv-SE", {
   timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
 });
@@ -85,7 +87,7 @@ export function scoreInputTime(at: Date): string {
  * The score input: no source facts (the prompt forbids guessing them), the publication time, the
  * original title (items are scored before any Chinese copy exists) and the whole body.
  */
-export function buildScoreInput(a: AnalyzeInputArticle): string {
+function scoreBody(a: AnalyzeInputArticle): string {
   let body: string;
   if (a.xPost) {
     const quoted = a.xPost.quoted?.text ? `\n\n[引用 ${a.xPost.quoted.handle ? `@${a.xPost.quoted.handle}` : "原推文"}]：${a.xPost.quoted.text}` : "";
@@ -94,12 +96,17 @@ export function buildScoreInput(a: AnalyzeInputArticle): string {
     body = (a.bodyText ?? a.excerpt ?? "").trim();
   }
   if (!body) body = a.title;
+  return body.slice(0, MAX_BODY_CHARS);
+}
+
+export function buildScoreInput(a: AnalyzeInputArticle): string {
+  const body = scoreBody(a);
   const at = a.publishedAt;
   return [
-    "请按系统规则评估以下单篇材料所代表的事件。只输出 attentionScore。",
+    "请按系统规则评估以下单篇材料所代表的事件，返回内容类型、五轴值、噪声类型及连续原文依据，不计算总分。",
     `【发布时间（北京时间）】\n${at ? scoreInputTime(at) : "未知（收录时间不代表发布时间）"}`,
     `【标题】\n${a.title.trim()}`,
-    `【完整正文】\n${body.length > MAX_BODY_CHARS ? body.slice(0, MAX_BODY_CHARS) : body}`,
+    `【完整正文】\n${body}`,
   ].join("\n\n");
 }
 
@@ -180,11 +187,11 @@ export function normalizeStructure(data: z.infer<typeof StructureSchema>, a: Ana
       return quote ? [{ text: c.text ?? quote, quote }] : [];
     }).slice(0, 4),
   };
-  return {
+  return groundStructure({
     category: data.category, tags: normalizeTags(data.tags),
     subjects: [...new Set(data.subjects.map((s) => s.trim().toLowerCase()).filter((s) => s in ENTITIES))],
     scope, fact,
-  };
+  }, [a.title, ...originals].join("\n"));
 }
 
 export interface AnalysisRun {
@@ -193,7 +200,7 @@ export interface AnalysisRun {
    * The independent score calls and the tier threshold they are held against; absent when the material
    * is not scored. `refused`: the model's content filter declined it, so it is not selected.
    */
-  scores: { model: string; threshold: number; values: number[]; receiptIds: number[]; reused: boolean; refused?: boolean } | null;
+  scores: { model: string; threshold: number; values: number[]; judgments?: ScoreJudgment[]; receiptIds: number[]; reused: boolean; refused?: boolean } | null;
   /** The reader-facing copy: `understand` (selected, near-selected), `summarize`, `verbatim` (a Chinese short post), `none`. */
   writing: {
     kind: "understand" | "summarize" | "verbatim" | "none";
@@ -204,6 +211,7 @@ export interface AnalysisRun {
     itemType?: string;
     authorRole?: string;
     identityGuard?: IdentityGuard;
+    grounding?: GroundingCheck;
     receiptIds: number[];
     reused: boolean;
   } | null;
@@ -229,6 +237,7 @@ function checkAnalysisRunning() {
 }
 
 const subjectOf = (a: AnalyzeInputArticle) => `article:${a.id}@${a.revision}`;
+const originalMaterial = (a: AnalyzeInputArticle) => [a.title, a.bodyText, a.excerpt, a.xPost?.text, a.xPost?.quoted?.text].filter(Boolean).join("\n");
 const tagged = (attemptTag: string | undefined, step: string) => [attemptTag, step].filter(Boolean).join(":") || undefined;
 
 async function runPrefilter(a: AnalyzeInputArticle, opts: StepOpts): Promise<AnalysisRun["prefilter"]> {
@@ -278,6 +287,7 @@ async function runScores(
   const call = scoreCall(model);
   const input = buildScoreInput(a);
   const values: number[] = [];
+  const judgments: ScoreJudgment[] = [];
   const receiptIds: number[] = [];
   let reused = true;
   // One after the other: the second call reuses the provider's cached prompt.
@@ -291,18 +301,20 @@ async function runScores(
         attemptTag: tagged(opts.attemptTag, `score-${i + 1}`),
       });
       onReceipt?.(res.receiptId);
-      values.push(res.data.attentionScore);
+      const judgment = evaluateScore(res.data, [a.title, scoreBody(a)]);
+      judgments.push(judgment);
+      values.push(judgment.attentionScore);
       receiptIds.push(res.receiptId);
       reused &&= res.reused;
     } catch (error) {
       const receiptId = observableReceiptId(error);
       if (receiptId !== null) onReceipt?.(receiptId);
       // The model's content filter declines the material (Zhipu 1301): not scored, so not selected.
-      if (isContentFilter(error)) return { model, threshold, values, receiptIds, reused: false, refused: true };
+      if (isContentFilter(error)) return { model, threshold, values, judgments, receiptIds, reused: false, refused: true };
       throw error;
     }
   }
-  return { model, threshold, values, receiptIds, reused };
+  return { model, threshold, values, judgments, receiptIds, reused };
 }
 
 /** The production score step; its threshold stays case-specific even when an evaluator shares model output. */
@@ -363,9 +375,11 @@ export async function runUnderstand(a: AnalyzeInputArticle, opts: StepOpts = {})
   }
   const d = res.data;
   const copy = finalizeCopy(translateInputOf(a), { titleZh: d.titleZh, summaryZh: d.summaryZh });
+  const reasonZh = d.editorialJudgment.trim() || null;
   return {
-    kind: "understand", model: res.model, titleZh: copy.titleZh, summaryZh: copy.summaryZh, reasonZh: d.editorialJudgment.trim() || null,
+    kind: "understand", model: res.model, titleZh: copy.titleZh, summaryZh: copy.summaryZh, reasonZh,
     itemType: d.itemType, authorRole: d.authorRole, identityGuard: copy.identityGuard, receiptIds: [res.receiptId], reused: res.reused,
+    grounding: groundCopy({ ...copy, reasonZh }, originalMaterial(a)),
   };
 }
 
@@ -402,7 +416,7 @@ async function runSummarize(a: AnalyzeInputArticle, opts: StepOpts): Promise<Non
       ? { titleZh: p.titleZh, summaryZh: p.summaryZh || p.bodyZh }
       : { titleZh: p.titleZh || (looksZh(t.title) ? t.title : ""), summaryZh: p.summaryZh };
   const copy = finalizeCopy(t, draft);
-  return { kind: "summarize", model: res.model, titleZh: copy.titleZh, summaryZh: copy.summaryZh, reasonZh: null, identityGuard: copy.identityGuard, receiptIds: [res.receiptId], reused: res.reused };
+  return { kind: "summarize", model: res.model, titleZh: copy.titleZh, summaryZh: copy.summaryZh, reasonZh: null, identityGuard: copy.identityGuard, receiptIds: [res.receiptId], reused: res.reused, grounding: groundCopy(copy, originalMaterial(a)) };
 }
 
 /** Runs the steps on the material as it is (or reuses their receipts) without writing business results. */
@@ -435,8 +449,9 @@ export async function runAnalysis(a: AnalyzeInputArticle, opts: StepOpts = {}): 
 /** One judgement from the steps: the selection rule, the reader-facing copy and the structure. */
 export function normalizeAnalysis(run: AnalysisRun) {
   const label = run.prefilter.label;
-  const titleZh = collapseWhitespace(run.writing?.titleZh ?? "");
-  const summaryZh = (run.writing?.summaryZh ?? "").trim();
+  const rejectedCopy = run.writing?.grounding?.rejected === true;
+  const titleZh = rejectedCopy ? "" : collapseWhitespace(run.writing?.titleZh ?? "");
+  const summaryZh = rejectedCopy ? "" : (run.writing?.summaryZh ?? "").trim();
   // Original posts can consist entirely of media. Model-written copy still needs a title and summary.
   const relevance = label === "BLOCK" ? "block" : !run.writing || !titleZh || (!summaryZh && run.writing.kind !== "verbatim") ? "unknown" : "pass";
   // Selected when the two scores add up to twice the tier threshold; the mean, floored, is the score
@@ -465,7 +480,7 @@ export function normalizeAnalysis(run: AnalysisRun) {
     subjects,
     titleZh,
     summaryZh,
-    reasonZh: run.writing?.reasonZh ?? null,
+    reasonZh: rejectedCopy ? null : run.writing?.reasonZh ?? null,
     scope: run.structure?.scope ?? "unknown",
     fact: run.structure?.fact ?? null,
   };
@@ -498,9 +513,11 @@ export async function analyzeArticle(articleId: string, opts: StepOpts = {}): Pr
   const w = run.writing;
   const detail = {
     prefilter: { label: run.prefilter.label, reason: run.prefilter.reason },
-    scores: out.scores, scoreModel: out.scoreModel, threshold: out.threshold, ...(out.scoreRefused ? { scoreRefused: true } : {}),
+    scores: out.scores, scoreJudgments: run.scores?.judgments ?? [], scoreModel: out.scoreModel, threshold: out.threshold, ...(out.scoreRefused ? { scoreRefused: true } : {}),
     ...(w ? { writer: w.kind, writerModel: w.model, itemType: w.itemType ?? null, authorRole: w.authorRole ?? null } : {}),
     ...(w?.identityGuard?.outcome === "fallback" ? { identityGuard: w.identityGuard } : {}),
+    ...(run.structure?.grounding.issues.length ? { structureGrounding: run.structure.grounding } : {}),
+    ...(w?.grounding?.issues.length ? { copyGrounding: w.grounding } : {}),
     scope: out.scope, fact: out.fact,
   };
   const committed = await sql.begin(async (tx) => {

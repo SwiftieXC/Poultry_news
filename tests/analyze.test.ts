@@ -3,7 +3,7 @@
 // understanding and the rest by the title/summary translation, a structure step gives the category,
 // subjects and fact. Material with only a feed summary has its page fetched first.
 import { pointModels, Reply, stub, tag } from "./setup.ts";
-import { analysisStep, type AnalysisStep } from "./analysis-steps.ts";
+import { analysisStep, scoreAnswer, type AnalysisStep } from "./analysis-steps.ts";
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { closeDb, sql } from "@aihot/backend/db";
@@ -40,12 +40,12 @@ const provider = await stub((_hit, req) => {
   requests.push({ step, marker, user });
   const answer = (content: unknown) => ({ id: `stub-${requests.length}`, model: "stub", choices: [{ message: { content: typeof content === "string" ? content : JSON.stringify(content) } }], usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 } });
   if (step === "prefilter") return answer({ label: marker === "OFFTOPIC" || marker === "BARE" ? "BLOCK" : marker === "VAGUE" || marker === "EMPTY_UNKNOWN" ? "UNKNOWN" : "PASS", reason: "测试" });
-  if (step === "score") return answer({ attentionScore: scoreAnswers[marker]!.shift() });
+  if (step === "score") return answer(scoreAnswer(user, scoreAnswers[marker]!.shift()!));
   if (step === "understand") {
     if (marker === "SENSITIVE") return new Reply(400, { contentFilter: [{ level: 1, role: "user" }], error: { code: "1301", message: "系统检测到输入或生成内容可能包含不安全或敏感内容" } });
     return answer({ itemType: "company_action", authorRole: "principal", tags: ["企业与竞争", "开源", "熟制禽肉", "不存在的标签"], editorialJudgment: `理由 ${marker}`, titleZh: `理解标题 ${marker}`, summaryZh: `理解摘要 ${marker}。第二句补充一个关键数字。` });
   }
-  if (step === "structure") return answer({ category: "competitor", tags: ["企业与竞争", "熟制禽肉"], subjects: ["jbs", "unknown-co"], scope: "single", fact: { title: `事实 ${marker}`, subject: "某公司", action: "发布", object: "模型", occurredAt: null, evidence: "a lab released a model", conditions: [] } });
+  if (step === "structure") return answer({ category: "competitor", tags: ["企业与竞争", "熟制禽肉"], subjects: ["jbs", "unknown-co"], scope: "single", fact: { title: `事实 ${marker}`, subject: "JBS", action: "发布", object: "模型", occurredAt: null, evidence: "JBS released a model", conditions: [] } });
   return answer(`title_zh: 翻译标题 ${marker}\nsummary_zh: 翻译摘要 ${marker}。第二句补充影响。`);
 });
 pointModels(provider.url);
@@ -62,7 +62,7 @@ after(async () => {
 });
 
 // The tag keeps each material unique: identical input would reuse an earlier run's paid answers.
-const LONG = "a lab released a model with a benchmark table and pricing details. ".repeat(8);
+const LONG = "JBS released a model with a benchmark table and pricing details. ".repeat(8);
 const article = async (marker: string, extra: Record<string, unknown> = {}) =>
   (await upsertMaterial({
     sourceId: SOURCE, url: `https://example.com/${marker}-${T}`, title: `${marker} model release ${T}`, bodyText: `${marker}: ${LONG} (${T})`,
@@ -86,7 +86,7 @@ test("a selected item: prefilter, two scores, the content understanding and the 
   assert.deepEqual(r.subjects, ["jbs"]);
   assert.deepEqual([r.output.writer, r.output.itemType, r.output.prefilter.label, r.output.fact.title], ["understand", "company_action", "PASS", "事实 CLEAR"]);
   assert.equal(r.output.scope, "single");
-  assert.equal(r.output.fact.evidence, "a lab released a model");
+  assert.equal(r.output.fact.evidence, "JBS released a model");
   const score = requests.find((q) => q.marker === "CLEAR" && q.step === "score")!;
   assert.match(score.user, /【标题】\nCLEAR model release/, "the score reads the original title, before any writing");
 });
@@ -209,7 +209,8 @@ test("an empty original post keeps its existing verbatim path", async () => {
   assert.deepEqual(run.map((request) => request.step).sort(), ["prefilter", "score", "score", "structure"]);
   const saved = await row(articleId);
   assert.deepEqual([saved.title_zh, saved.output.writer], [url, "verbatim"]);
-  assert.deepEqual([saved.category, saved.tags, saved.output.scope, saved.output.fact], ["competitor", ["企业与竞争", "熟制禽肉", "JBS"], "unknown", null]);
+  assert.deepEqual([saved.category, saved.tags, saved.output.scope, saved.output.fact], ["competitor", ["企业与竞争", "熟制禽肉"], "unknown", null]);
+  assert.deepEqual(saved.subjects, [], "an empty original post does not support the fixture's invented JBS identity");
 });
 
 test("guards: a company the input does not name is not written in; long summaries are cut at sentences", () => {

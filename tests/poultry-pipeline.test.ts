@@ -1,5 +1,5 @@
 import { pointModels, stub, tag, embeddingsStub } from './setup.ts';
-import { analysisStep } from './analysis-steps.ts';
+import { analysisStep, scoreAnswerFromRequest } from './analysis-steps.ts';
 import assert from 'node:assert/strict';
 import { test,after } from 'node:test';
 import { closeDb,sql } from '@aihot/backend/db';
@@ -18,7 +18,7 @@ const summary='日本主管机构新增熟制禽肉工厂注册，仅限公告�
 const provider=await stub((_hit,request)=>{
  const step=analysisStep(request.body);calls.push(step);
  const value=step==='prefilter'?{label:mode==='block'?'BLOCK':'PASS',reason:'synthetic regression'}:
- step==='score'?{attentionScore:80}:
+ step==='score'?scoreAnswerFromRequest(request.body,80):
  step==='structure'?{category:'regulation_access',tags:['政策与准入','日本','中国','熟制禽肉','新增准入'],subjects:['maff'],scope:'single',fact:{title:'熟制禽肉工厂注册',subject:'MAFF',action:'注册',object:'熟制禽肉工厂',occurredAt:null,evidence:'仅限熟制产品，不含生鲜产品。',conditions:[{quote:'仅限熟制产品，不含生鲜产品。'}]}}:
  {itemType:'regulation',authorRole:'principal',tags:['政策与准入'],editorialJudgment:'原文限定加工形态，需要核对工厂和产品范围。',titleZh:'日本主管机构新增熟制禽肉工厂注册',summaryZh:summary};
  return {choices:[{message:{content:JSON.stringify(value)}}],usage:{prompt_tokens:20,completion_tokens:20,total_tokens:40}};
@@ -33,6 +33,9 @@ test('a poultry action summary survives analysis, publication and a rule-compose
  const result=await analyzeArticle(articleId);
  assert.equal(result?.output?.category,'regulation_access');assert.deepEqual(result?.output?.scores,[80,80]);
  assert.equal(result?.output?.summaryZh,summary);assert.equal(result?.output?.fact?.conditions.length,1);
+ const [saved]=await sql<{output:{scoreJudgments:Array<{attentionScore:number;grounded:boolean;evidence:string}>}}[]>`SELECT output FROM analyses WHERE article_id=${articleId} ORDER BY id DESC LIMIT 1`;
+ assert.equal(saved!.output.scoreJudgments.length,2);
+ for(const judgment of saved!.output.scoreJudgments){assert.equal(judgment.attentionScore,80);assert.equal(judgment.grounded,true);assert.ok('MAFF 公告更新工厂注册。仅限熟制产品，不含生鲜产品。'.includes(judgment.evidence));}
  const embeddings=await embeddingsStub();
  try { await groupArticle(articleId); } finally { await embeddings.close(); pointModels(provider.url); }
  const published=await publishArticle(articleId,{now:new Date(),releasedAt:at});assert.equal(published?.selected,true);

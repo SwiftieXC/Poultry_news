@@ -2,7 +2,7 @@
 // them through another writer; rebuilding keeps old model replies or loses pool membership; stored
 // translations leak into detail/export or licensed full RSS drops media; real prose and fetched X Articles stop being written.
 import { pointModels, stub, tag } from "./setup.ts";
-import { analysisStep, SELECTING_SCORE } from "./analysis-steps.ts";
+import { analysisStep, scoreAnswerFromRequest, SELECTING_SCORE } from "./analysis-steps.ts";
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { closeDb, sql } from "@aihot/backend/db";
@@ -18,7 +18,7 @@ const provider = await stub((_hit, req) => {
   const step = analysisStep(req.body);
   requests.push(step);
   const content = step === "prefilter" ? { label: "UNKNOWN", reason: "No standalone text evidence" }
-    : step === "score" ? { attentionScore: req.body.includes("high-score") ? SELECTING_SCORE : 12 }
+    : step === "score" ? scoreAnswerFromRequest(req.body, req.body.includes("high-score") ? SELECTING_SCORE : 12)
     : step === "structure" ? { category: "buyer_channel", tags: [], subjects: [], scope: "single", fact: null }
     : step === "understand" ? { itemType: "product_update", authorRole: "principal", tags: [], editorialJudgment: "客户与渠道", titleZh: "实际正文标题", summaryZh: "这是实际正文的中文摘要。" }
     : "title_zh: 实际正文标题\nbody_zh: 这是实际正文的中文摘要。";

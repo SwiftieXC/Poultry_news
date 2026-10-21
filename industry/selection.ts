@@ -16,4 +16,8 @@ export const SELECTION = {
    * 其余用更便宜的“标题摘要翻译”。
    */
   understandFloor: 50,
+  scoring: {
+    weights: { rel: 30, impact: 25, act: 20, info: 15, cred: 10 },
+    caps: { none: 100, recipe: 10, promotion: 35, unverified: 30, insufficient: 30, roundup: 100 },
+  },
 } as const;
